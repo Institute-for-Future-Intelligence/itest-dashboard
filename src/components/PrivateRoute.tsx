@@ -1,5 +1,7 @@
+// src/components/PrivateRoute.tsx
 import { Navigate } from 'react-router-dom';
 import { useUserStore } from '../store/useUserStore';
+import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -12,15 +14,7 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return <AuthenticatedLayout>{children}</AuthenticatedLayout>;
 };
 
 export default PrivateRoute;
-// This component checks if the user is authenticated.
-// If not, it redirects them to the login page.
-// If the user is authenticated, it renders the children components.
-// You can use this component to wrap any routes that require authentication.
-// For example, in your App component, you can use it like this:
-// <PrivateRoute>
-//   <Route path="/home" element={<HomePage />} />
-// </PrivateRoute>  

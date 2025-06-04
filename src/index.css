@@ -24,10 +24,12 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  display: block;
+  background-color: #fff;
+  font-family: 'Gabarito', sans-serif;
 }
 
 h1 {

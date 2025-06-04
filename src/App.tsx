@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
+import WeatherPage from './pages/WeatherPage';
+import SensorPage from './pages/SensorPage';
+import WaterQualityPage from './pages/WaterQualityPage';
 import LogoutPage from './pages/LogoutPage';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -10,6 +13,9 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/home" element={<PrivateRoute><HomePage /></PrivateRoute>} />
+        <Route path="/weather" element={<PrivateRoute><WeatherPage /></PrivateRoute>} />
+        <Route path="/sensors" element={<PrivateRoute><SensorPage /></PrivateRoute>} />
+        <Route path="/water-quality" element={<PrivateRoute><WaterQualityPage /></PrivateRoute>} />
         <Route path="/logout" element={<LogoutPage />} />
       </Routes>
     </BrowserRouter>
