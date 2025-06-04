@@ -2,7 +2,7 @@
 
 Data Science Dashboard Development Code Repository for iTEST Grant Project.
 
-# React + TypeScript + Vite
+# Template (React + TypeScript + Vite)
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
