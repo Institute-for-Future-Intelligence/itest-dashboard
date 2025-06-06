@@ -1,11 +1,9 @@
-import { Box, Typography, Stack, Card, CardContent, CardActions, Button } from '@mui/material';
+import { Box, Typography, Stack, Card, CardContent } from '@mui/material';
 import { usePermissions } from '../hooks/usePermissions';
-import { useNavigate } from 'react-router-dom';
 import { AdminPanelSettings, School, Person } from '@mui/icons-material';
 
 function HomePage() {
   const { user, isAdmin, isEducator, isStudent } = usePermissions();
-  const navigate = useNavigate();
 
   const getRoleIcon = () => {
     if (isAdmin) return <AdminPanelSettings color="primary" />;
@@ -49,9 +47,6 @@ function HomePage() {
               View your recent activity and system status.
             </Typography>
           </CardContent>
-          <CardActions>
-            <Button size="small">View Details</Button>
-          </CardActions>
         </Card>
 
         {/* Water Quality - Available to all roles */}
@@ -64,11 +59,6 @@ function HomePage() {
               Enter and manage water quality measurements.
             </Typography>
           </CardContent>
-          <CardActions>
-            <Button size="small" href="/water-quality">
-              Enter Data
-            </Button>
-          </CardActions>
         </Card>
 
         {/* Admin-only features */}
@@ -82,15 +72,6 @@ function HomePage() {
                 Manage users, system settings, and advanced configurations.
               </Typography>
             </CardContent>
-            <CardActions>
-              <Button 
-                size="small" 
-                color="primary"
-                onClick={() => navigate('/admin')}
-              >
-                Open Admin Dashboard
-              </Button>
-            </CardActions>
           </Card>
         )}
 
@@ -105,11 +86,6 @@ function HomePage() {
                 View trends, generate reports, and analyze collected data.
               </Typography>
             </CardContent>
-            <CardActions>
-              <Button size="small">
-                View Analytics
-              </Button>
-            </CardActions>
           </Card>
         )}
 
@@ -124,11 +100,6 @@ function HomePage() {
                 Upload CSV files from Jukebox sensors and other data sources.
               </Typography>
             </CardContent>
-            <CardActions>
-              <Button size="small" href="/sensors">
-                Upload Data
-              </Button>
-            </CardActions>
           </Card>
         )}
       </Stack>
