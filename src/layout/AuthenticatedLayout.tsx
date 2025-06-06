@@ -1,102 +1,39 @@
 // src/layout/AuthenticatedLayout.tsx
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  Typography,
-  Button,
-  Container,
-  useTheme,
-} from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, Container } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/useUserStore';
+import { useConfirmation } from '../hooks/useConfirmation';
+import ConfirmationDialog from '../features/ConfirmationDialog';
+import { NavigationBar } from '../components/navigation';
+import type { ReactNode } from 'react';
 
-import { IconButton } from '@mui/material';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
-import { useThemeStore } from '../store/useThemeStore';
+interface AuthenticatedLayoutProps {
+  children: ReactNode;
+}
 
-const navItems = [
-  { label: 'Home', path: '/home' },
-  { label: 'Weather Data', path: '/weather' },
-  { label: 'Sensor Data', path: '/sensors' },
-  { label: 'Water Quality', path: '/water-quality' },
-];
-
-const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
+const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const clearUser = useUserStore((state) => state.clearUser);
-  const theme = useTheme();
-  const colorMode = useThemeStore();
+  const { confirm, confirmationState, handleConfirm, handleCancel } = useConfirmation();
 
-  const handleLogout = () => {
-    clearUser();
-    navigate('/');
+  const handleLogoutClick = async () => {
+    const confirmed = await confirm({
+      title: 'Confirm Logout',
+      message: 'Are you sure you want to log out of the iTEST Dashboard?',
+      confirmText: 'Logout',
+      cancelText: 'Cancel',
+    });
+
+    if (confirmed) {
+      clearUser();
+      navigate('/');
+    }
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* Sticky AppBar */}
-      <AppBar
-        position="sticky"
-        color="primary"
-        elevation={1}
-        sx={{
-          width: '100%',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Toolbar
-            disableGutters
-            sx={{
-                width: '100%',
-                minHeight: 64,
-                px: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-            }}
-        >
-          <Typography variant="h6" sx={{ fontFamily: 'Gabarito, sans-serif' }}>
-            iTEST Data Science Dashboard
-          </Typography>
+      <NavigationBar onLogout={handleLogoutClick} />
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                sx={{
-                  color:
-                    location.pathname === item.path
-                      ? theme.palette.secondary.main
-                      : '#fff',
-                  fontWeight:
-                    location.pathname === item.path ? 'bold' : 'normal',
-                  fontFamily: 'Gabarito, sans-serif',
-                  '&:hover': {
-                    color: theme.palette.secondary.light,
-                    backgroundColor: theme.palette.primary.dark,
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
-            <Button
-              color="inherit"
-              onClick={handleLogout}
-              sx={{ fontFamily: 'Gabarito, sans-serif' }}
-            >
-              Logout
-            </Button>
-            <IconButton onClick={colorMode.toggleMode} color="inherit">
-                {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* Main content */}
       <Container
         maxWidth="lg"
         sx={{
@@ -108,6 +45,12 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
       >
         {children}
       </Container>
+
+      <ConfirmationDialog
+        confirmationState={confirmationState}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </Box>
   );
 };

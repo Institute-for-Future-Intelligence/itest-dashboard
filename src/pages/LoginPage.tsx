@@ -1,34 +1,18 @@
 // src/pages/LoginPage.tsx
-import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase/firebase';
-import { useUserStore } from '../store/useUserStore';
-import { useNavigate } from 'react-router-dom';
-
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Typography,
   Stack,
   Avatar,
 } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
+import { CheckCircle as CheckIcon } from '@mui/icons-material';
+import { useAuthState } from '../hooks/useAuthState';
+import { AuthButton, AuthFeedback, LoadingOverlay } from '../components/auth';
 
 function LoginPage() {
-  const setUser = useUserStore((state) => state.setUser);
-  const navigate = useNavigate();
-
-  const handleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      setUser({ uid: user.uid });
-      navigate('/home');
-    } catch (err) {
-      console.error('Login error:', err);
-    }
-  };
+  const { authState, error, handleLogin, isSuccess } = useAuthState();
 
   return (
     <Box
@@ -38,36 +22,42 @@ function LoginPage() {
         justifyContent: 'center',
         alignItems: 'center',
         bgcolor: 'background.default',
+        position: 'relative',
       }}
     >
-      <Card sx={{ width: 360, p: 2, boxShadow: 3 }}>
+      <LoadingOverlay show={authState === 'loading'} />
+
+      <Card 
+        sx={{ 
+          width: 360, 
+          p: 2, 
+          boxShadow: isSuccess ? 6 : 3,
+          transform: isSuccess ? 'scale(1.02)' : 'scale(1)',
+          transition: 'all 0.3s ease-in-out',
+        }}
+      >
         <CardContent>
           <Stack spacing={3} alignItems="center">
             <Avatar
               alt="iTEST"
-              sx={{ bgcolor: 'primary.main', width: 56, height: 56 }}
-            >
-              I
-            </Avatar>
-            <Typography variant="h5" fontWeight={600}>
-              iTEST DS Dashboard
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<GoogleIcon />}
-              onClick={handleLogin}
-              sx={{
-                bgcolor: '#DB4437',
-                '&:hover': {
-                  bgcolor: '#c1351d',
-                },
-                textTransform: 'none',
-                fontWeight: 600,
+              sx={{ 
+                bgcolor: isSuccess ? '#4caf50' : 'primary.main', 
+                width: 56, 
+                height: 56,
+                transition: 'background-color 0.3s ease-in-out',
               }}
-              fullWidth
             >
-              Sign in with Google
-            </Button>
+              {isSuccess ? <CheckIcon /> : 'I'}
+            </Avatar>
+            
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h5" fontWeight={600}>
+                iTEST DS Dashboard
+              </Typography>
+              <AuthFeedback authState={authState} error={error} />
+            </Box>
+
+            <AuthButton authState={authState} onLogin={handleLogin} />
           </Stack>
         </CardContent>
       </Card>

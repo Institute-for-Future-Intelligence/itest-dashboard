@@ -1,0 +1,80 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is educator or admin
+    function isEducatorOrAdmin() {
+      return request.auth != null && 
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['educator', 'admin'];
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // === USER PROFILE IMAGES ===
+    match /user_profiles/{userId}/{fileName} {
+      // Users can upload their own profile images
+      allow write: if request.auth.uid == userId && 
+        request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+        request.resource.contentType.matches('image/.*');
+      
+      // Users can read their own images, others can read if authenticated
+      allow read: if request.auth != null;
+    }
+
+    // === CSV UPLOADS (Sensor Data) ===
+    match /csv_uploads/{userId}/{fileName} {
+      // All authenticated users can upload CSV files to their own folder
+      allow write: if request.auth.uid == userId && 
+        request.resource.size < 50 * 1024 * 1024 && // 50MB limit
+        request.resource.contentType == 'text/csv';
+      
+      // Users can read their own uploads
+      // Educators and admins can read all uploads
+      allow read: if request.auth.uid == userId || isEducatorOrAdmin();
+      
+      // Only educators and admins can delete files
+      allow delete: if isEducatorOrAdmin();
+    }
+
+    // === EXPORT FILES ===
+    match /exports/{fileName} {
+      // Only educators and admins can create export files
+      allow write: if isEducatorOrAdmin();
+      
+      // Only educators and admins can download export files
+      allow read: if isEducatorOrAdmin();
+      
+      // Only admins can delete export files
+      allow delete: if isAdmin();
+    }
+
+    // === SYSTEM BACKUPS ===
+    match /backups/{fileName} {
+      // Only admins can create, read, or delete backup files
+      allow read, write, delete: if isAdmin();
+    }
+
+    // === DOCUMENTATION/RESOURCES ===
+    match /resources/{fileName} {
+      // All authenticated users can read resources
+      allow read: if request.auth != null;
+      
+      // Only educators and admins can upload resources
+      allow write: if isEducatorOrAdmin() && 
+        request.resource.size < 100 * 1024 * 1024; // 100MB limit
+      
+      // Only admins can delete resources
+      allow delete: if isAdmin();
+    }
+
+    // === DEFAULT DENY ===
+    // Deny all other storage access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+} 
