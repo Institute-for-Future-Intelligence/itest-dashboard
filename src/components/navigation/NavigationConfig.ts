@@ -18,13 +18,6 @@ export const getNavItemsForUser = (permissions: ReturnType<typeof usePermissions
       description: 'Dashboard overview'
     },
     { 
-      label: 'Water Quality', 
-      path: '/water-quality', 
-      show: permissions.hasPermission('canEnterWaterQuality'),
-      iconName: 'Water' as const,
-      description: 'Water quality measurements'
-    },
-    { 
       label: 'Weather', 
       path: '/weather', 
       show: permissions.hasPermission('canAccessWeatherData'),
@@ -37,6 +30,13 @@ export const getNavItemsForUser = (permissions: ReturnType<typeof usePermissions
       show: permissions.hasPermission('canUploadSensorData'),
       iconName: 'Sensors' as const,
       description: 'Sensor data management'
+    },
+    { 
+      label: 'Water Quality', 
+      path: '/water-quality', 
+      show: permissions.hasPermission('canEnterWaterQuality'),
+      iconName: 'Water' as const,
+      description: 'Water quality measurements'
     },
     { 
       label: 'Admin', 
