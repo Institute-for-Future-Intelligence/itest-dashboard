@@ -20,10 +20,12 @@ export const useRedirectAuth = ({ onLoading, onSuccess, onError, onIdle }: UseRe
   useEffect(() => {
     const handleRedirectResult = async () => {
       try {
-        onLoading();
+        // Don't set loading immediately - first check if there's a redirect result
         const result = await getRedirectResult(auth);
         
         if (result?.user) {
+          // Only set loading if we actually have a redirect result
+          onLoading();
           const userData = await userService.createOrUpdateUser(result.user.uid);
           onSuccess();
           setUser(userData);
@@ -31,9 +33,8 @@ export const useRedirectAuth = ({ onLoading, onSuccess, onError, onIdle }: UseRe
           setTimeout(() => {
             navigate('/home');
           }, 1000);
-        } else {
-          onIdle();
         }
+        // If no redirect result, don't call onIdle() - let the main hook manage state
       } catch (err: any) {
         console.error('Redirect auth error:', err);
         onError(getAuthErrorMessage(err.code));
