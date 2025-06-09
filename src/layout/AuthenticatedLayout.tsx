@@ -5,6 +5,7 @@ import { useUserStore } from '../store/useUserStore';
 import { useConfirmation } from '../hooks/useConfirmation';
 import ConfirmationDialog from '../features/ConfirmationDialog';
 import { NavigationBar } from '../components/navigation';
+import Footer from '../components/layout/Footer';
 import type { ReactNode } from 'react';
 
 interface AuthenticatedLayoutProps {
@@ -45,6 +46,8 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
       >
         {children}
       </Container>
+
+      <Footer />
 
       <ConfirmationDialog
         confirmationState={confirmationState}
