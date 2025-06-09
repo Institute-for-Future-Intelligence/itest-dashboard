@@ -7,11 +7,11 @@ import {
   Button,
   Stack,
 } from '@mui/material';
-import type { HourlyVariable, DailyVariable } from '../../types/weather';
+import type { WeatherVariable } from '../../types/weather';
 
 interface VariableSelectorProps {
   title: string;
-  variables: (HourlyVariable | DailyVariable)[];
+  variables: WeatherVariable[];
   selectedVariables: string[];
   onVariableChange: (variableIds: string[]) => void;
 }
@@ -60,7 +60,7 @@ const VariableSelector = ({
       <FormGroup>
         {variables.map((variable) => (
           <FormControlLabel
-            key={variable.id}
+            key={variable.apiParam}
             control={
               <Checkbox
                 checked={selectedVariables.includes(variable.apiParam)}

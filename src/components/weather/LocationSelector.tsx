@@ -13,17 +13,17 @@ const LocationSelector = ({ selectedLocation, onLocationChange }: LocationSelect
       <InputLabel id="location-select-label">Location</InputLabel>
       <Select
         labelId="location-select-label"
-        value={selectedLocation?.id || ''}
+        value={selectedLocation?.name || ''}
         label="Location"
         onChange={(e) => {
-          const location = HAWAII_LOCATIONS.find(loc => loc.id === e.target.value);
+          const location = HAWAII_LOCATIONS.find(loc => loc.name === e.target.value);
           if (location) {
             onLocationChange(location);
           }
         }}
       >
         {HAWAII_LOCATIONS.map((location) => (
-          <MenuItem key={location.id} value={location.id}>
+          <MenuItem key={location.name} value={location.name}>
             {location.name}
           </MenuItem>
         ))}
