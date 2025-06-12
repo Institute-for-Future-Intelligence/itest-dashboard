@@ -1,11 +1,11 @@
 // src/layout/AuthenticatedLayout.tsx
 import { Box, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useUserStore } from '../store/useUserStore';
 import { useConfirmation } from '../hooks/useConfirmation';
 import ConfirmationDialog from '../features/ConfirmationDialog';
 import { NavigationBar } from '../components/navigation';
 import Footer from '../components/layout/Footer';
+import { useLogout } from '../utils/logout';
 import type { ReactNode } from 'react';
 
 interface AuthenticatedLayoutProps {
@@ -14,7 +14,7 @@ interface AuthenticatedLayoutProps {
 
 const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   const navigate = useNavigate();
-  const clearUser = useUserStore((state) => state.clearUser);
+  const logout = useLogout();
   const { confirm, confirmationState, handleConfirm, handleCancel } = useConfirmation();
 
   const handleLogoutClick = async () => {
@@ -26,7 +26,7 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
     });
 
     if (confirmed) {
-      clearUser();
+      await logout();
       navigate('/');
     }
   };

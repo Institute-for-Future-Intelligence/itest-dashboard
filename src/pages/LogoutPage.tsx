@@ -8,7 +8,7 @@ function LogoutPage() {
 
   useEffect(() => {
     logout().then(() => navigate('/'));
-  }, []);
+  }, [logout, navigate]);
 
   return <h1>Logging out...</h1>;
 }
