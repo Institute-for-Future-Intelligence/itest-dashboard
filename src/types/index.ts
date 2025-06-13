@@ -11,6 +11,7 @@ export type UserRole = 'admin' | 'student' | 'educator';
 export interface RolePermissions {
   canViewDashboard: boolean;
   canEnterWaterQuality: boolean;
+  canViewSensorData: boolean;
   canUploadSensorData: boolean;
   canAccessWeatherData: boolean;
   canManageUsers: boolean;
@@ -24,6 +25,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
   admin: {
     canViewDashboard: true,
     canEnterWaterQuality: true,
+    canViewSensorData: true,
     canUploadSensorData: true,
     canAccessWeatherData: true,
     canManageUsers: true,
@@ -34,7 +36,8 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
   educator: {
     canViewDashboard: true,
     canEnterWaterQuality: true,
-    canUploadSensorData: true,
+    canViewSensorData: true,
+    canUploadSensorData: false,
     canAccessWeatherData: true,
     canManageUsers: false,
     canExportData: true,
@@ -44,7 +47,8 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
   student: {
     canViewDashboard: true,
     canEnterWaterQuality: true,
-    canUploadSensorData: true,
+    canViewSensorData: true,
+    canUploadSensorData: false,
     canAccessWeatherData: true,
     canManageUsers: false,
     canExportData: false,

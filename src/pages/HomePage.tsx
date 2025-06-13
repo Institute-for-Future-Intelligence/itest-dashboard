@@ -89,19 +89,20 @@ function HomePage() {
           </Card>
         )}
 
-        {/* Sensor data upload - Educators and Admins only */}
-        {(isEducator || isAdmin) && (
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Sensor Data Upload
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Upload CSV files from Jukebox sensors and other data sources.
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
+        {/* Sensor data - All users can view, only educators/admins can upload */}
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Sensor Data
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {(isEducator || isAdmin) 
+                ? 'View and upload environmental sensor data from monitoring sites.'
+                : 'View environmental sensor data including humidity, CO₂, pH, and salinity measurements.'
+              }
+            </Typography>
+          </CardContent>
+        </Card>
       </Stack>
 
 

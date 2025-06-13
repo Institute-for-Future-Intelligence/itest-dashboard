@@ -24,6 +24,7 @@ export const usePermissions = () => {
     canExportData: safeHasPermission('canExportData'),
     canViewAnalytics: safeHasPermission('canViewAnalytics'),
     canModifySettings: safeHasPermission('canModifySettings'),
+    canViewSensorData: safeHasPermission('canViewSensorData'),
     canUploadSensorData: safeHasPermission('canUploadSensorData'),
   };
 }; 

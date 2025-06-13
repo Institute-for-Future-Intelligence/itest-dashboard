@@ -27,7 +27,7 @@ export const getNavItemsForUser = (permissions: ReturnType<typeof usePermissions
     { 
       label: 'Sensors', 
       path: '/sensors', 
-      show: permissions.hasPermission('canUploadSensorData'),
+      show: permissions.hasPermission('canViewSensorData'),
       iconName: 'Sensors' as const,
       description: 'Sensor data management'
     },

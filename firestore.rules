@@ -50,18 +50,24 @@ service cloud.firestore {
       allow delete: if isEducatorOrAdmin();
     }
 
-    // === SENSOR DATA (CSV UPLOADS) ===
-    // All authenticated users can upload sensor data
-    // Students can only read their own uploads
-    // Educators and admins can read all sensor data
+    // === SENSOR DATA (EXCEL UPLOADS) ===
+    // Only admins can upload sensor data
+    // All authenticated users can read sensor data
     match /sensorData/{dataId} {
-      allow create: if isAuthenticated();
-      allow read: if isAuthenticated() && (
-        resource.data.uploadedBy == request.auth.uid || 
-        isEducatorOrAdmin()
-      );
-      allow update: if isEducatorOrAdmin();
-      allow delete: if isEducatorOrAdmin();
+      allow create: if isAdmin();
+      allow read: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // === SENSOR UPLOADS TRACKING ===
+    // Only admins can create upload records
+    // All authenticated users can read upload history
+    match /sensorUploads/{uploadId} {
+      allow create: if isAdmin();
+      allow read: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // === WEATHER DATA ===
