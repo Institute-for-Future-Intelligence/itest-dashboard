@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import {
   Box,
   Typography,
-  Chip,
   useTheme,
 } from '@mui/material';
 import {
@@ -48,21 +47,39 @@ const DateRangeIndicator: React.FC<DateRangeIndicatorProps> = memo(({
         <Typography variant="body2" color="text.secondary">
           Showing:
         </Typography>
-        <Chip 
-          label={`Last ${dataCount} readings`}
-          size="small"
-          color="secondary"
-          variant="outlined"
-        />
+        <Typography
+          variant="caption"
+          sx={{
+            px: 1,
+            py: 0.5,
+            border: 1,
+            borderColor: 'secondary.main',
+            borderRadius: 2,
+            color: 'secondary.main',
+            backgroundColor: 'transparent',
+            fontSize: '0.75rem',
+            fontWeight: 500,
+          }}
+        >
+          Last {dataCount} readings
+        </Typography>
       </Box>
 
       {dateRange.spansDays && (
-        <Chip 
-          label="Multi-day data"
-          size="small"
-          color="info"
-          variant="filled"
-        />
+        <Typography
+          variant="caption"
+          sx={{
+            px: 1,
+            py: 0.5,
+            borderRadius: 2,
+            color: 'info.contrastText',
+            backgroundColor: 'info.main',
+            fontSize: '0.75rem',
+            fontWeight: 500,
+          }}
+        >
+          Multi-day data
+        </Typography>
       )}
     </Box>
   );
