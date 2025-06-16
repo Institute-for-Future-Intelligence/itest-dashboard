@@ -11,17 +11,16 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { ChartDataPoint } from './VisualizationUtils';
 
-interface PhSalinityChartProps {
+interface HumidityChartProps {
   data: ChartDataPoint[];
   formatTooltipValue: (value: number, name: string) => [string, string];
 }
 
-const PhSalinityChart: React.FC<PhSalinityChartProps> = memo(({ 
+const HumidityChart: React.FC<HumidityChartProps> = memo(({ 
   data, 
   formatTooltipValue 
 }) => {
@@ -30,7 +29,7 @@ const PhSalinityChart: React.FC<PhSalinityChartProps> = memo(({
   return (
     <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>
-        pH & Salinity Levels
+        Humidity Levels
       </Typography>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
@@ -40,27 +39,25 @@ const PhSalinityChart: React.FC<PhSalinityChartProps> = memo(({
             fontSize={12}
             interval="preserveStartEnd"
           />
-          <YAxis yAxisId="left" fontSize={12} />
-          <YAxis yAxisId="right" orientation="right" fontSize={12} />
-          <Tooltip formatter={formatTooltipValue} />
-          <Legend />
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="ph"
-            stroke={theme.palette.success.main}
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            name="pH"
+          <YAxis 
+            fontSize={12}
+            domain={[0, 100]}
+            label={{ value: 'Humidity (%)', angle: -90, position: 'insideLeft' }}
+          />
+          <Tooltip 
+            formatter={formatTooltipValue}
+            labelFormatter={(label) => {
+              const dataPoint = data.find(d => d.timestamp === label);
+              return dataPoint ? dataPoint.fullTimestamp : `Time: ${label}`;
+            }}
           />
           <Line
-            yAxisId="right"
             type="monotone"
-            dataKey="salinity"
-            stroke={theme.palette.warning.main}
+            dataKey="humidity"
+            stroke={theme.palette.primary.main}
             strokeWidth={2}
             dot={{ r: 3 }}
-            name="Salinity (ppt)"
+            name="Humidity (%)"
           />
         </LineChart>
       </ResponsiveContainer>
@@ -68,6 +65,6 @@ const PhSalinityChart: React.FC<PhSalinityChartProps> = memo(({
   );
 });
 
-PhSalinityChart.displayName = 'PhSalinityChart';
+HumidityChart.displayName = 'HumidityChart';
 
-export default PhSalinityChart; 
+export default HumidityChart; 

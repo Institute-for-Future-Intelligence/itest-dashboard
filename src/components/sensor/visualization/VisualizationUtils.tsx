@@ -3,6 +3,7 @@ import type { SensorDataPoint } from '../../../types/sensor';
 // Shared chart data interface
 export interface ChartDataPoint {
   timestamp: string;
+  fullTimestamp: string;
   date: string;
   humidity: number;
   co2: number;
@@ -18,22 +19,90 @@ export interface StatisticsData {
   salinity: { avg: number; min: number; max: number };
 }
 
+// Date range interface
+export interface DateRange {
+  start: Date;
+  end: Date;
+  spansDays: boolean;
+  formattedRange: string;
+}
+
+// Utility function to determine if data spans multiple days
+const getDateRange = (data: SensorDataPoint[]): DateRange => {
+  if (data.length === 0) {
+    const now = new Date();
+    return {
+      start: now,
+      end: now,
+      spansDays: false,
+      formattedRange: now.toLocaleDateString()
+    };
+  }
+
+  const sortedData = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const start = sortedData[0].timestamp;
+  const end = sortedData[sortedData.length - 1].timestamp;
+  
+  const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const spansDays = startDate.getTime() !== endDate.getTime();
+
+  let formattedRange: string;
+  if (spansDays) {
+    formattedRange = `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+  } else {
+    formattedRange = start.toLocaleDateString();
+  }
+
+  return {
+    start,
+    end,
+    spansDays,
+    formattedRange
+  };
+};
+
+// Utility function to format timestamp based on data span
+const formatTimestamp = (timestamp: Date, spansDays: boolean): string => {
+  if (spansDays) {
+    // Show date and time when spanning multiple days
+    return timestamp.toLocaleDateString([], { 
+      month: 'short', 
+      day: 'numeric' 
+    }) + ' ' + timestamp.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  } else {
+    // Show only time when all data is from the same day
+    return timestamp.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  }
+};
+
 // Utility function to process raw sensor data into chart format
 export const processChartData = (data: SensorDataPoint[]): ChartDataPoint[] => {
-  return data
-    .slice(-50) // Show last 50 data points for performance
+  const last50Data = data.slice(-50); // Show last 50 data points for performance
+  const dateRange = getDateRange(last50Data);
+  
+  return last50Data
     .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
     .map((point) => ({
-      timestamp: point.timestamp.toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      }),
+      timestamp: formatTimestamp(point.timestamp, dateRange.spansDays),
+      fullTimestamp: point.timestamp.toLocaleString(),
       date: point.timestamp.toLocaleDateString(),
       humidity: point.humidity != null ? Number(point.humidity.toFixed(1)) : 0,
       co2: point.co2 != null ? Number(point.co2.toFixed(0)) : 0,
       ph: point.ph != null ? Number(point.ph.toFixed(2)) : 0,
       salinity: point.salinity != null ? Number(point.salinity.toFixed(2)) : 0,
     }));
+};
+
+// Utility function to get date range information
+export const getDataDateRange = (data: SensorDataPoint[]): DateRange => {
+  return getDateRange(data.slice(-50)); // Match the data used in charts
 };
 
 // Utility function to calculate statistics from raw sensor data
@@ -76,7 +145,7 @@ export const calculateStatistics = (data: SensorDataPoint[]): StatisticsData => 
   };
 };
 
-// Utility function to format tooltip values
+// Utility function to format tooltip values with full timestamp
 export const formatTooltipValue = (value: number, name: string): [string, string] => {
   switch (name) {
     case 'humidity':
@@ -90,4 +159,10 @@ export const formatTooltipValue = (value: number, name: string): [string, string
     default:
       return [value.toString(), name];
   }
+};
+
+// Enhanced tooltip formatter that includes full date/time
+export const formatTooltipLabel = (label: string, data: ChartDataPoint[]): string => {
+  const dataPoint = data.find(d => d.timestamp === label);
+  return dataPoint ? `${dataPoint.fullTimestamp}` : label;
 }; 

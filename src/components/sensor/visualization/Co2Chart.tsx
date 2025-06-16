@@ -11,17 +11,16 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { ChartDataPoint } from './VisualizationUtils';
 
-interface HumidityCoChartProps {
+interface Co2ChartProps {
   data: ChartDataPoint[];
   formatTooltipValue: (value: number, name: string) => [string, string];
 }
 
-const HumidityCoChart: React.FC<HumidityCoChartProps> = memo(({ 
+const Co2Chart: React.FC<Co2ChartProps> = memo(({ 
   data, 
   formatTooltipValue 
 }) => {
@@ -30,7 +29,7 @@ const HumidityCoChart: React.FC<HumidityCoChartProps> = memo(({
   return (
     <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>
-        Humidity & CO₂ Levels
+        CO₂ Levels
       </Typography>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
@@ -40,21 +39,18 @@ const HumidityCoChart: React.FC<HumidityCoChartProps> = memo(({
             fontSize={12}
             interval="preserveStartEnd"
           />
-          <YAxis yAxisId="left" fontSize={12} />
-          <YAxis yAxisId="right" orientation="right" fontSize={12} />
-          <Tooltip formatter={formatTooltipValue} />
-          <Legend />
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="humidity"
-            stroke={theme.palette.primary.main}
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            name="Humidity (%)"
+          <YAxis 
+            fontSize={12}
+            label={{ value: 'CO₂ (ppm)', angle: -90, position: 'insideLeft' }}
+          />
+          <Tooltip 
+            formatter={formatTooltipValue}
+            labelFormatter={(label) => {
+              const dataPoint = data.find(d => d.timestamp === label);
+              return dataPoint ? dataPoint.fullTimestamp : `Time: ${label}`;
+            }}
           />
           <Line
-            yAxisId="right"
             type="monotone"
             dataKey="co2"
             stroke={theme.palette.secondary.main}
@@ -68,6 +64,6 @@ const HumidityCoChart: React.FC<HumidityCoChartProps> = memo(({
   );
 });
 
-HumidityCoChart.displayName = 'HumidityCoChart';
+Co2Chart.displayName = 'Co2Chart';
 
-export default HumidityCoChart; 
+export default Co2Chart; 

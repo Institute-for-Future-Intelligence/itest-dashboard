@@ -7,14 +7,17 @@ import type { SensorDataPoint } from '../../types/sensor';
 
 // Import modular components
 import StatisticsCards from './visualization/StatisticsCards';
-import HumidityCoChart from './visualization/HumidityCoChart';
-import PhSalinityChart from './visualization/PhSalinityChart';
-import CombinedAreaChart from './visualization/CombinedAreaChart';
+import HumidityChart from './visualization/HumidityChart';
+import Co2Chart from './visualization/Co2Chart';
+import PhChart from './visualization/PhChart';
+import SalinityChart from './visualization/SalinityChart';
+import DateRangeIndicator from './visualization/DateRangeIndicator';
 import EmptyState from './visualization/EmptyState';
 import { 
   processChartData, 
   calculateStatistics, 
-  formatTooltipValue 
+  formatTooltipValue,
+  getDataDateRange
 } from './visualization/VisualizationUtils';
 
 interface SensorDataVisualizationProps {
@@ -32,6 +35,9 @@ const SensorDataVisualization: React.FC<SensorDataVisualizationProps> = memo(({
   // Calculate statistics
   const statistics = useMemo(() => calculateStatistics(data), [data]);
 
+  // Get date range information
+  const dateRange = useMemo(() => getDataDateRange(data), [data]);
+
   // Early return for loading or empty states
   if (loading || data.length === 0) {
     return <EmptyState loading={loading} />;
@@ -43,17 +49,27 @@ const SensorDataVisualization: React.FC<SensorDataVisualizationProps> = memo(({
         Data Visualization
       </Typography>
 
+      {/* Date Range Indicator */}
+      <DateRangeIndicator 
+        dateRange={dateRange} 
+        dataCount={Math.min(data.length, 50)} 
+      />
+
       {/* Statistics Cards */}
       <StatisticsCards statistics={statistics} />
 
-      {/* Charts */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3, mb: 3 }}>
-        <HumidityCoChart data={chartData} formatTooltipValue={formatTooltipValue} />
-        <PhSalinityChart data={chartData} formatTooltipValue={formatTooltipValue} />
+      {/* Individual Sensor Charts */}
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+        gap: 3, 
+        mb: 3 
+      }}>
+        <HumidityChart data={chartData} formatTooltipValue={formatTooltipValue} />
+        <Co2Chart data={chartData} formatTooltipValue={formatTooltipValue} />
+        <PhChart data={chartData} formatTooltipValue={formatTooltipValue} />
+        <SalinityChart data={chartData} formatTooltipValue={formatTooltipValue} />
       </Box>
-
-      {/* Combined Area Chart */}
-      <CombinedAreaChart data={chartData} formatTooltipValue={formatTooltipValue} />
     </Box>
   );
 });
