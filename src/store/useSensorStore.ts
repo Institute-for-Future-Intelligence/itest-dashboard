@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { sensorService } from '../firebase/sensorService';
 import type { SensorDataPoint, SensorDataFilters, ExcelValidationResult } from '../types/sensor';
+import type { DuplicateDetectionResult } from '../firebase/sensorService';
 
 // Table state interface
 interface TableState {
@@ -24,10 +25,17 @@ interface UploadState {
   uploadProgress: number;
   selectedFile: File | null;
   validation: ExcelValidationResult | null;
-  uploadStatus: 'idle' | 'validating' | 'uploading' | 'success' | 'error';
+  uploadStatus: 'idle' | 'validating' | 'checking-duplicates' | 'uploading' | 'success' | 'error';
   errorMessage: string;
   isDragOver: boolean;
   selectedLocation: string;
+  duplicateInfo: DuplicateDetectionResult | null;
+  showDuplicateDialog: boolean;
+  uploadResult: {
+    processedCount: number;
+    skippedCount?: number;
+    overwrittenCount?: number;
+  } | null;
 }
 
 interface SensorStore {
@@ -70,6 +78,9 @@ interface SensorStore {
   setErrorMessage: (message: string) => void;
   setDragOver: (isDragOver: boolean) => void;
   setSelectedLocation: (location: string) => void;
+  setDuplicateInfo: (duplicateInfo: DuplicateDetectionResult | null) => void;
+  setShowDuplicateDialog: (show: boolean) => void;
+  setUploadResult: (result: UploadState['uploadResult']) => void;
   resetUploadState: () => void;
   
   // Computed getters
@@ -112,6 +123,9 @@ export const useSensorStore = create<SensorStore>()(
         errorMessage: '',
         isDragOver: false,
         selectedLocation: 'waikalua_loko_ia', // Default location
+        duplicateInfo: null,
+        showDuplicateDialog: false,
+        uploadResult: null,
       },
       
       // Data actions
@@ -234,6 +248,24 @@ export const useSensorStore = create<SensorStore>()(
         }));
       },
       
+      setDuplicateInfo: (duplicateInfo) => {
+        set(state => ({
+          upload: { ...state.upload, duplicateInfo }
+        }));
+      },
+      
+      setShowDuplicateDialog: (showDuplicateDialog) => {
+        set(state => ({
+          upload: { ...state.upload, showDuplicateDialog }
+        }));
+      },
+      
+      setUploadResult: (uploadResult) => {
+        set(state => ({
+          upload: { ...state.upload, uploadResult }
+        }));
+      },
+      
       resetUploadState: () => {
         set(state => ({
           upload: {
@@ -244,6 +276,9 @@ export const useSensorStore = create<SensorStore>()(
             uploadProgress: 0,
             errorMessage: '',
             isDragOver: false,
+            duplicateInfo: null,
+            showDuplicateDialog: false,
+            uploadResult: null,
           }
         }));
       },

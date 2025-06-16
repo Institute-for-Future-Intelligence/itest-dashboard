@@ -9,7 +9,7 @@ import {
 } from '@mui/icons-material';
 import type { ExcelValidationResult } from '../../../types/sensor';
 
-type UploadStatus = 'idle' | 'validating' | 'uploading' | 'success' | 'error';
+type UploadStatus = 'idle' | 'validating' | 'checking-duplicates' | 'uploading' | 'success' | 'error';
 
 interface UploadActionsProps {
   selectedFile: File | null;
@@ -47,10 +47,11 @@ const UploadActions: React.FC<UploadActionsProps> = memo(({
       <Button
         variant="contained"
         onClick={onUpload}
-        disabled={!validation?.isValid || isUploading}
+        disabled={!validation?.isValid || isUploading || uploadStatus === 'checking-duplicates'}
         startIcon={<CloudUpload />}
       >
-        {isUploading ? 'Uploading...' : 'Upload Data'}
+        {uploadStatus === 'checking-duplicates' ? 'Checking for duplicates...' : 
+         isUploading ? 'Uploading...' : 'Upload Data'}
       </Button>
     </Box>
   );

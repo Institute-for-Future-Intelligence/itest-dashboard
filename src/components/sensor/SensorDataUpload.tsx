@@ -9,6 +9,7 @@ import FileDropZone from './upload/FileDropZone';
 import UploadActions from './upload/UploadActions';
 import UploadProgress from './upload/UploadProgress';
 import ValidationResults from './upload/ValidationResults';
+import DuplicateDetectionDialog from './upload/DuplicateDetectionDialog';
 
 interface SensorDataUploadProps {
   onUploadComplete?: (uploadId: string, recordCount: number) => void;
@@ -27,6 +28,9 @@ const SensorDataUpload: React.FC<SensorDataUploadProps> = memo(({
     handleDragOver,
     handleDragLeave,
     handleUpload,
+    handleSkipDuplicates,
+    handleOverwriteDuplicates,
+    handleCancelDuplicateDialog,
     setSelectedLocation,
   } = useSensorUpload({ userUid, onUploadComplete });
 
@@ -65,9 +69,20 @@ const SensorDataUpload: React.FC<SensorDataUploadProps> = memo(({
         uploadStatus={upload.uploadStatus}
         uploadProgress={upload.uploadProgress}
         errorMessage={upload.errorMessage}
+        uploadResult={upload.uploadResult}
       />
 
       <ValidationResults validation={upload.validation} />
+
+      <DuplicateDetectionDialog
+        open={upload.showDuplicateDialog}
+        duplicateInfo={upload.duplicateInfo}
+        onClose={handleCancelDuplicateDialog}
+        onSkipDuplicates={handleSkipDuplicates}
+        onOverwriteDuplicates={handleOverwriteDuplicates}
+        onCancel={handleCancelDuplicateDialog}
+        loading={upload.uploadStatus === 'uploading'}
+      />
     </Box>
   );
 });

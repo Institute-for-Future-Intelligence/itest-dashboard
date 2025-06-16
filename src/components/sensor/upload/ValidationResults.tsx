@@ -1,12 +1,19 @@
 import React, { memo } from 'react';
 import {
   Box,
-  Paper,
+  Alert,
   Typography,
   List,
   ListItem,
   ListItemText,
+  Chip,
 } from '@mui/material';
+import {
+  CheckCircle,
+  Warning,
+  Error as ErrorIcon,
+  Info as InfoIcon,
+} from '@mui/icons-material';
 import type { ExcelValidationResult } from '../../../types/sensor';
 
 interface ValidationResultsProps {
@@ -18,58 +25,107 @@ const ValidationResults: React.FC<ValidationResultsProps> = memo(({ validation }
     return null;
   }
 
+  const { isValid, errors, warnings, rowCount, validRowCount, duplicateInfo } = validation;
+
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Validation Results
-      </Typography>
-      
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2">
-          Total Rows: {validation.rowCount} | Valid Rows: {validation.validRowCount}
+    <Box sx={{ mb: 2 }}>
+      {/* Overall Status */}
+      <Alert 
+        severity={isValid ? 'success' : 'error'} 
+        icon={isValid ? <CheckCircle /> : <ErrorIcon />}
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {isValid ? 'File validation successful' : 'File validation failed'}
         </Typography>
-      </Box>
+        <Typography variant="body2">
+          {validRowCount} of {rowCount} rows are valid
+        </Typography>
+      </Alert>
 
-      {validation.errors.length > 0 && (
+      {/* Duplicate Detection Results */}
+      {duplicateInfo && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" color="error" gutterBottom>
-            Errors ({validation.errors.length})
-          </Typography>
-          <List dense>
-            {validation.errors.slice(0, 5).map((error, index) => (
-              <ListItem key={index} dense>
-                <ListItemText primary={error} />
+          <Alert 
+            severity={duplicateInfo.hasDuplicates ? 'warning' : 'info'}
+            icon={duplicateInfo.hasDuplicates ? <Warning /> : <InfoIcon />}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+              {duplicateInfo.hasDuplicates ? 'Duplicate Data Detected' : 'No Duplicates Found'}
+            </Typography>
+            
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+              <Chip
+                size="small"
+                label={`${duplicateInfo.newDataCount} New Records`}
+                color="success"
+                variant="outlined"
+              />
+              {duplicateInfo.hasDuplicates && (
+                <Chip
+                  size="small"
+                  label={`${duplicateInfo.duplicateCount} Duplicates`}
+                  color="warning"
+                  variant="filled"
+                />
+              )}
+            </Box>
+
+            <Typography variant="body2" color="text.secondary">
+              Data range: {duplicateInfo.dateRange.start.toLocaleDateString()} - {duplicateInfo.dateRange.end.toLocaleDateString()}
+            </Typography>
+
+            {duplicateInfo.hasDuplicates && (
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                You'll be asked how to handle duplicates when you click Upload.
+              </Typography>
+            )}
+          </Alert>
+        </Box>
+      )}
+
+      {/* Errors */}
+      {errors.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              Errors ({errors.length})
+            </Typography>
+          </Alert>
+          <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+            {errors.map((error, index) => (
+              <ListItem key={index} sx={{ py: 0.5 }}>
+                <ListItemText
+                  primary={error}
+                  primaryTypographyProps={{ variant: 'body2', color: 'error' }}
+                />
               </ListItem>
             ))}
-            {validation.errors.length > 5 && (
-              <ListItem>
-                <ListItemText primary={`... and ${validation.errors.length - 5} more errors`} />
-              </ListItem>
-            )}
           </List>
         </Box>
       )}
 
-      {validation.warnings.length > 0 && (
+      {/* Warnings */}
+      {warnings.length > 0 && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" color="warning.main" gutterBottom>
-            Warnings ({validation.warnings.length})
-          </Typography>
-          <List dense>
-            {validation.warnings.slice(0, 5).map((warning, index) => (
-              <ListItem key={index} dense>
-                <ListItemText primary={warning} />
+          <Alert severity="warning" sx={{ mb: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              Warnings ({warnings.length})
+            </Typography>
+          </Alert>
+          <List dense sx={{ maxHeight: 150, overflow: 'auto' }}>
+            {warnings.map((warning, index) => (
+              <ListItem key={index} sx={{ py: 0.5 }}>
+                <ListItemText
+                  primary={warning}
+                  primaryTypographyProps={{ variant: 'body2', color: 'warning.main' }}
+                />
               </ListItem>
             ))}
-            {validation.warnings.length > 5 && (
-              <ListItem>
-                <ListItemText primary={`... and ${validation.warnings.length - 5} more warnings`} />
-              </ListItem>
-            )}
           </List>
         </Box>
       )}
-    </Paper>
+    </Box>
   );
 });
 

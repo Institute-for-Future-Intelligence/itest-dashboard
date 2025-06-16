@@ -96,6 +96,20 @@ export interface ExcelValidationResult {
   warnings: string[];
   rowCount: number;
   validRowCount: number;
+  duplicateInfo?: {
+    hasDuplicates: boolean;
+    duplicateCount: number;
+    newDataCount: number;
+    duplicateEntries: Array<{
+      timestamp: Date;
+      existingId: string;
+      rowIndex: number;
+    }>;
+    dateRange: {
+      start: Date;
+      end: Date;
+    };
+  };
 }
 
 // Table column configuration for data display

@@ -20,6 +20,9 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
   const setErrorMessage = useSensorStore(state => state.setErrorMessage);
   const setDragOver = useSensorStore(state => state.setDragOver);
   const setSelectedLocation = useSensorStore(state => state.setSelectedLocation);
+  const setDuplicateInfo = useSensorStore(state => state.setDuplicateInfo);
+  const setShowDuplicateDialog = useSensorStore(state => state.setShowDuplicateDialog);
+  const setUploadResult = useSensorStore(state => state.setUploadResult);
   const resetUploadState = useSensorStore(state => state.resetUploadState);
 
   const validateFileInternal = useCallback(async (file: File) => {
@@ -35,20 +38,60 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
 
       // Process and validate Excel content
       const result = await processExcelFile(file);
-      setValidation(result.validation);
       
-      if (result.validation.isValid) {
-        setUploadStatus('idle');
-      } else {
+      if (!result.validation.isValid) {
+        setValidation(result.validation);
         setUploadStatus('error');
         setErrorMessage('File validation failed. Please check the errors below.');
+        return;
       }
+
+      // Check for duplicates during validation
+      setUploadStatus('checking-duplicates');
+      
+      try {
+        const duplicateInfo = await sensorService.checkForDuplicates(
+          result.data,
+          upload.selectedLocation
+        );
+
+        // Add duplicate info to validation result
+        const enhancedValidation = {
+          ...result.validation,
+          duplicateInfo
+        };
+
+        setValidation(enhancedValidation);
+        setDuplicateInfo(duplicateInfo);
+
+        if (duplicateInfo.hasDuplicates) {
+          // File is valid but has duplicates - user can still choose to upload
+          setUploadStatus('idle');
+        } else {
+          // File is valid with no duplicates
+          setUploadStatus('idle');
+        }
+
+      } catch (duplicateError) {
+        // If duplicate checking fails, still allow upload but show warning
+        console.warn('Duplicate checking failed:', duplicateError);
+        const validationWithWarning = {
+          ...result.validation,
+          warnings: [
+            ...result.validation.warnings,
+            'Could not check for duplicates. Upload will proceed without duplicate detection.'
+          ]
+        };
+        setValidation(validationWithWarning);
+        setUploadStatus('idle');
+      }
+
     } catch (error) {
       setUploadStatus('error');
       const errorMessage = error instanceof Error ? error.message : 'Failed to validate file';
       setErrorMessage(errorMessage);
     }
-  }, [setUploadStatus, setValidation, setErrorMessage]);
+  }, [setUploadStatus, setValidation, setErrorMessage, setDuplicateInfo, upload.selectedLocation]);
 
   const handleFileSelect = useCallback(async (file: File) => {
     setSelectedFile(file);
@@ -85,11 +128,12 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
     setDragOver(false);
   }, [setDragOver]);
 
-  const handleUpload = useCallback(async () => {
+  const performUpload = useCallback(async (options: { skipDuplicates?: boolean; overwriteDuplicates?: boolean } = {}) => {
     if (!upload.selectedFile || !upload.validation?.isValid) return;
 
     setUploadStatus('uploading');
     setUploadProgress(0);
+    setShowDuplicateDialog(false);
 
     try {
       // Process the file again to get the data
@@ -102,22 +146,30 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
         setUploadProgress(currentProgress);
       }, 200);
 
-      // Upload to Firestore
+      // Upload to Firestore with duplicate handling options
       const uploadResult = await sensorService.uploadSensorData(
         result.data,
         upload.selectedFile.name,
         userUid,
-        upload.selectedLocation
+        upload.selectedLocation,
+        options
       );
 
       clearInterval(progressInterval);
       setUploadProgress(100);
       setUploadStatus('success');
       
+      // Store upload results for display
+      setUploadResult({
+        processedCount: uploadResult.processedCount,
+        skippedCount: uploadResult.skippedCount,
+        overwrittenCount: uploadResult.overwrittenCount,
+      });
+      
       // Reset form after a delay
       setTimeout(() => {
         resetUploadState();
-      }, 2000);
+      }, 3000); // Increased delay to show results
 
       onUploadComplete?.(uploadResult.uploadId, uploadResult.processedCount);
 
@@ -134,9 +186,38 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
     setUploadStatus, 
     setUploadProgress, 
     setErrorMessage, 
+    setShowDuplicateDialog,
+    setUploadResult,
     resetUploadState, 
     onUploadComplete
   ]);
+
+  const handleUpload = useCallback(async () => {
+    if (!upload.selectedFile || !upload.validation?.isValid) return;
+
+    // If duplicates were found during validation, show dialog
+    if (upload.duplicateInfo?.hasDuplicates) {
+      setShowDuplicateDialog(true);
+      return;
+    }
+
+    // No duplicates, proceed with direct upload
+    await performUpload();
+  }, [upload.selectedFile, upload.validation, upload.duplicateInfo, setShowDuplicateDialog]);
+
+  const handleSkipDuplicates = useCallback(async () => {
+    await performUpload({ skipDuplicates: true });
+  }, [performUpload]);
+
+  const handleOverwriteDuplicates = useCallback(async () => {
+    await performUpload({ overwriteDuplicates: true });
+  }, [performUpload]);
+
+  const handleCancelDuplicateDialog = useCallback(() => {
+    setShowDuplicateDialog(false);
+    setDuplicateInfo(null);
+    setUploadStatus('idle');
+  }, [setShowDuplicateDialog, setDuplicateInfo, setUploadStatus]);
 
   return {
     // State
@@ -149,6 +230,9 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
     handleDragOver,
     handleDragLeave,
     handleUpload,
+    handleSkipDuplicates,
+    handleOverwriteDuplicates,
+    handleCancelDuplicateDialog,
     setSelectedLocation,
   };
 }; 

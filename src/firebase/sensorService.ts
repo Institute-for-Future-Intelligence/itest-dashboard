@@ -23,22 +23,166 @@ import type {
 const SENSOR_DATA_COLLECTION = 'sensorData';
 const SENSOR_UPLOADS_COLLECTION = 'sensorUploads';
 
+// New interface for duplicate detection results
+export interface DuplicateDetectionResult {
+  hasDuplicates: boolean;
+  duplicateCount: number;
+  newDataCount: number;
+  duplicateEntries: Array<{
+    timestamp: Date;
+    existingId: string;
+    rowIndex: number;
+  }>;
+  dateRange: {
+    start: Date;
+    end: Date;
+  };
+}
+
+// New interface for upload options
+export interface UploadOptions {
+  skipDuplicates?: boolean;
+  overwriteDuplicates?: boolean;
+  location: string;
+  fileName: string;
+  uploadedBy: string;
+}
+
 export const sensorService = {
   /**
-   * Upload sensor data in batches
+   * Check for duplicate data before upload - optimized to check upload history first
+   */
+  async checkForDuplicates(
+    rawData: RawSensorData[],
+    location: string
+  ): Promise<DuplicateDetectionResult> {
+    try {
+      // Process the raw data to get timestamps
+      const processedData = rawData
+        .map((row, index) => {
+          const timestamp = new Date(row.Date);
+          if (isNaN(timestamp.getTime())) return null;
+          return { timestamp, rowIndex: index };
+        })
+        .filter(Boolean) as Array<{ timestamp: Date; rowIndex: number }>;
+
+      if (processedData.length === 0) {
+        return {
+          hasDuplicates: false,
+          duplicateCount: 0,
+          newDataCount: 0,
+          duplicateEntries: [],
+          dateRange: { start: new Date(), end: new Date() }
+        };
+      }
+
+      // Get date range for the upload
+      const timestamps = processedData.map(d => d.timestamp);
+      const startDate = new Date(Math.min(...timestamps.map(d => d.getTime())));
+      const endDate = new Date(Math.max(...timestamps.map(d => d.getTime())));
+
+      // STEP 1: Check upload history first for overlapping date ranges
+      // This is much more efficient than checking individual sensor data documents
+      const uploadHistoryQuery = query(
+        collection(db, SENSOR_UPLOADS_COLLECTION),
+        where('location', '==', location),
+        where('status', '==', 'completed'), // Only check successful uploads
+        orderBy('uploadedAt', 'desc'),
+        limit(50) // Check recent uploads
+      );
+
+      const uploadHistorySnapshot = await getDocs(uploadHistoryQuery);
+      const overlappingUploads = uploadHistorySnapshot.docs.filter(doc => {
+        const uploadData = doc.data();
+        const uploadStart = new Date(uploadData.dateRange.start);
+        const uploadEnd = new Date(uploadData.dateRange.end);
+        
+        // Check if date ranges overlap
+        return (startDate <= uploadEnd && endDate >= uploadStart);
+      });
+
+      // If no overlapping uploads found, no duplicates possible
+      if (overlappingUploads.length === 0) {
+        return {
+          hasDuplicates: false,
+          duplicateCount: 0,
+          newDataCount: processedData.length,
+          duplicateEntries: [],
+          dateRange: { start: startDate, end: endDate }
+        };
+      }
+
+      // STEP 2: Only if overlapping uploads exist, check actual sensor data
+      console.log(`Found ${overlappingUploads.length} overlapping uploads, checking for exact duplicates...`);
+      
+      // Query existing data in the same date range and location
+      const existingDataQuery = query(
+        collection(db, SENSOR_DATA_COLLECTION),
+        where('location', '==', location),
+        where('date', '>=', startDate.toISOString().split('T')[0]),
+        where('date', '<=', endDate.toISOString().split('T')[0])
+      );
+
+      const existingSnapshot = await getDocs(existingDataQuery);
+      const existingData = existingSnapshot.docs.map(doc => ({
+        id: doc.id,
+        timestamp: doc.data().timestamp?.toDate() || new Date(),
+      }));
+
+      // Check for duplicates (same timestamp within 1 minute tolerance)
+      const duplicateEntries: DuplicateDetectionResult['duplicateEntries'] = [];
+      const TOLERANCE_MS = 60000; // 1 minute tolerance
+
+      processedData.forEach(({ timestamp, rowIndex }) => {
+        const duplicate = existingData.find(existing => 
+          Math.abs(existing.timestamp.getTime() - timestamp.getTime()) < TOLERANCE_MS
+        );
+        
+        if (duplicate) {
+          duplicateEntries.push({
+            timestamp,
+            existingId: duplicate.id,
+            rowIndex
+          });
+        }
+      });
+
+      return {
+        hasDuplicates: duplicateEntries.length > 0,
+        duplicateCount: duplicateEntries.length,
+        newDataCount: processedData.length - duplicateEntries.length,
+        duplicateEntries,
+        dateRange: { start: startDate, end: endDate }
+      };
+
+    } catch (error) {
+      console.error('Error checking for duplicates:', error);
+      throw new Error('Failed to check for duplicate data');
+    }
+  },
+
+  /**
+   * Upload sensor data in batches with duplicate handling
    */
   async uploadSensorData(
     rawData: RawSensorData[],
     fileName: string,
     uploadedBy: string,
-    location: string
-  ): Promise<{ uploadId: string; processedCount: number }> {
+    location: string,
+    options: { skipDuplicates?: boolean; overwriteDuplicates?: boolean } = {}
+  ): Promise<{ uploadId: string; processedCount: number; skippedCount?: number; overwrittenCount?: number }> {
     const batch = writeBatch(db);
     const uploadId = doc(collection(db, SENSOR_UPLOADS_COLLECTION)).id;
     
     try {
+      // Check for duplicates first if options are provided
+      let duplicateInfo: DuplicateDetectionResult | null = null;
+      if (options.skipDuplicates || options.overwriteDuplicates) {
+        duplicateInfo = await this.checkForDuplicates(rawData, location);
+      }
+
       // Process and validate the raw data
-      const processedData: Omit<SensorDataPoint, 'id'>[] = [];
+      const processedData: Array<Omit<SensorDataPoint, 'id'> & { rowIndex: number; isDuplicate?: boolean; existingId?: string }> = [];
       const errors: string[] = [];
       
       for (let i = 0; i < rawData.length; i++) {
@@ -58,6 +202,10 @@ export const sensorService = {
             continue;
           }
 
+          // Check if this row is a duplicate
+          const duplicateEntry = duplicateInfo?.duplicateEntries.find(d => d.rowIndex === i);
+          const isDuplicate = !!duplicateEntry;
+
           // Create data point with only valid numeric values (NaN values are omitted)
           const dataPoint: any = {
             timestamp,
@@ -65,6 +213,9 @@ export const sensorService = {
             location,
             uploadedBy,
             uploadedAt: serverTimestamp() as Timestamp,
+            rowIndex: i,
+            isDuplicate,
+            existingId: duplicateEntry?.existingId,
           };
 
           // Only include numeric fields that have valid values
@@ -83,6 +234,20 @@ export const sensorService = {
         throw new Error('No valid data rows found');
       }
 
+      // Filter data based on duplicate handling options
+      let dataToUpload = processedData;
+      let skippedCount = 0;
+      let overwrittenCount = 0;
+
+      if (options.skipDuplicates) {
+        const nonDuplicates = processedData.filter(d => !d.isDuplicate);
+        skippedCount = processedData.length - nonDuplicates.length;
+        dataToUpload = nonDuplicates;
+      } else if (options.overwriteDuplicates) {
+        overwrittenCount = processedData.filter(d => d.isDuplicate).length;
+        // Keep all data, but we'll handle overwrites in the batch operations
+      }
+
       // Create upload record
       const dateRange = {
         start: Math.min(...processedData.map(d => d.timestamp.getTime())),
@@ -94,7 +259,7 @@ export const sensorService = {
         uploadedAt: serverTimestamp() as Timestamp,
         fileName,
         location,
-        recordCount: processedData.length,
+        recordCount: dataToUpload.length,
         dateRange: {
           start: new Date(dateRange.start).toISOString(),
           end: new Date(dateRange.end).toISOString(),
@@ -109,13 +274,23 @@ export const sensorService = {
       const BATCH_SIZE = 450; // Leave some room for the upload record
       const batches = [];
       
-      for (let i = 0; i < processedData.length; i += BATCH_SIZE) {
-        const batchData = processedData.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < dataToUpload.length; i += BATCH_SIZE) {
+        const batchData = dataToUpload.slice(i, i + BATCH_SIZE);
         const currentBatch = writeBatch(db);
         
         batchData.forEach((dataPoint) => {
-          const docRef = doc(collection(db, SENSOR_DATA_COLLECTION));
-          currentBatch.set(docRef, dataPoint);
+          // Remove helper fields before saving
+          const { rowIndex, isDuplicate, existingId, ...cleanDataPoint } = dataPoint;
+          
+          if (options.overwriteDuplicates && isDuplicate && existingId) {
+            // Update existing document
+            const existingRef = doc(db, SENSOR_DATA_COLLECTION, existingId);
+            currentBatch.update(existingRef, cleanDataPoint);
+          } else if (!isDuplicate || !options.skipDuplicates) {
+            // Create new document
+            const docRef = doc(collection(db, SENSOR_DATA_COLLECTION));
+            currentBatch.set(docRef, cleanDataPoint);
+          }
         });
         
         batches.push(currentBatch);
@@ -135,7 +310,9 @@ export const sensorService = {
 
       return {
         uploadId,
-        processedCount: processedData.length,
+        processedCount: dataToUpload.length,
+        skippedCount: options.skipDuplicates ? skippedCount : undefined,
+        overwrittenCount: options.overwriteDuplicates ? overwrittenCount : undefined,
       };
 
     } catch (error) {
