@@ -36,19 +36,21 @@ export const useConfirmation = () => {
     });
   }, []);
 
+  const { resolve } = state;
+
   const handleConfirm = useCallback(() => {
-    if (state.resolve) {
-      state.resolve(true);
+    if (resolve) {
+      resolve(true);
     }
     setState({ isOpen: false, options: null, resolve: null });
-  }, [state.resolve]);
+  }, [resolve]);
 
   const handleCancel = useCallback(() => {
-    if (state.resolve) {
-      state.resolve(false);
+    if (resolve) {
+      resolve(false);
     }
     setState({ isOpen: false, options: null, resolve: null });
-  }, [state.resolve]);
+  }, [resolve]);
 
   return {
     confirm,

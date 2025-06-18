@@ -25,8 +25,8 @@ describe('chartDataProcessor', () => {
     it('should filter out missing values', () => {
       const mockWeatherData: WeatherApiResponse['hourly'] = {
         time: ['2024-01-01T00:00:00Z', '2024-01-01T01:00:00Z', '2024-01-01T02:00:00Z'],
-        temperature_2m: [20.5, null as any, 22.0],
-        humidity_2m: [65, 68, null as any],
+        temperature_2m: [20.5, null, 22.0],
+        humidity_2m: [65, 68, null],
       };
 
       const result = processWeatherData(mockWeatherData, ['temperature_2m', 'humidity_2m']);
@@ -40,8 +40,8 @@ describe('chartDataProcessor', () => {
     it('should filter out time points with no valid data', () => {
       const mockWeatherData: WeatherApiResponse['hourly'] = {
         time: ['2024-01-01T00:00:00Z', '2024-01-01T01:00:00Z'],
-        temperature_2m: [20.5, null as any],
-        humidity_2m: [null as any, null as any],
+        temperature_2m: [20.5, null],
+        humidity_2m: [null, null],
       };
 
       const result = processWeatherData(mockWeatherData, ['temperature_2m', 'humidity_2m']);

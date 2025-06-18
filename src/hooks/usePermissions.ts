@@ -1,12 +1,13 @@
 import { useUserStore } from '../store/useUserStore';
+import type { RolePermissions } from '../types';
 
 export const usePermissions = () => {
   const { user, getUserPermissions, hasPermission } = useUserStore();
 
   // Safe permission checking with fallback
-  const safeHasPermission = (permission: string) => {
+  const safeHasPermission = (permission: keyof RolePermissions) => {
     try {
-      return hasPermission(permission as any);
+      return hasPermission(permission);
     } catch {
       return false;
     }

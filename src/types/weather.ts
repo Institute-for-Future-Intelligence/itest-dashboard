@@ -48,26 +48,36 @@ export interface WeatherState {
 export type WeatherDataType = 'hourly' | 'daily';
 export type ApiStatus = 'idle' | 'loading' | 'success' | 'error';
 
-export const isValidLocation = (obj: any): obj is Location => {
+export const isValidLocation = (obj: unknown): obj is Location => {
   return (
-    obj &&
-    typeof obj.name === 'string' &&
-    typeof obj.latitude === 'number' &&
-    typeof obj.longitude === 'number' &&
-    obj.latitude >= -90 &&
-    obj.latitude <= 90 &&
-    obj.longitude >= -180 &&
-    obj.longitude <= 180
+    obj !== null &&
+    obj !== undefined &&
+    typeof obj === 'object' &&
+    'name' in obj &&
+    'latitude' in obj &&
+    'longitude' in obj &&
+    typeof (obj as Location).name === 'string' &&
+    typeof (obj as Location).latitude === 'number' &&
+    typeof (obj as Location).longitude === 'number' &&
+    (obj as Location).latitude >= -90 &&
+    (obj as Location).latitude <= 90 &&
+    (obj as Location).longitude >= -180 &&
+    (obj as Location).longitude <= 180
   );
 };
 
-export const isValidDateRange = (obj: any): obj is DateRange => {
-  if (!obj || typeof obj.startDate !== 'string' || typeof obj.endDate !== 'string') {
+export const isValidDateRange = (obj: unknown): obj is DateRange => {
+  if (!obj || typeof obj !== 'object' || !('startDate' in obj) || !('endDate' in obj)) {
     return false;
   }
   
-  const startDate = new Date(obj.startDate);
-  const endDate = new Date(obj.endDate);
+  const typedObj = obj as Record<string, unknown>;
+  if (typeof typedObj.startDate !== 'string' || typeof typedObj.endDate !== 'string') {
+    return false;
+  }
+  
+  const startDate = new Date(typedObj.startDate);
+  const endDate = new Date(typedObj.endDate);
   
   return (
     !isNaN(startDate.getTime()) &&
@@ -79,7 +89,7 @@ export const isValidDateRange = (obj: any): obj is DateRange => {
 export interface WeatherApiError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface WeatherConfig {

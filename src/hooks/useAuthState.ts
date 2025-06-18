@@ -55,10 +55,10 @@ export const useAuthState = () => {
         await handlePopupAuth();
       }
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
       setAuthState('error');
-      setError(getAuthErrorMessage(err.code));
+      setError(getAuthErrorMessage((err as { code?: string })?.code || 'unknown'));
       
       setTimeout(() => {
         setAuthState('idle');

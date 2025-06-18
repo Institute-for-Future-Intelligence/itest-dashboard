@@ -23,6 +23,7 @@ import {
 import { userService, type FirestoreUser } from '../firebase/firestore';
 import { usePermissions } from '../hooks/usePermissions';
 import type { UserRole } from '../types';
+import { Timestamp } from 'firebase/firestore';
 
 const AdminUserManagement: React.FC = () => {
   const { isAdmin } = usePermissions();
@@ -96,10 +97,15 @@ const AdminUserManagement: React.FC = () => {
     }
   };
 
-  const formatDate = (timestamp: any) => {
+  const formatDate = (timestamp: Timestamp | { seconds: number } | null | undefined) => {
     if (!timestamp) return 'Never';
     try {
-      return new Date(timestamp.seconds * 1000).toLocaleDateString();
+      if (timestamp instanceof Timestamp) {
+        return timestamp.toDate().toLocaleDateString();
+      } else if (typeof timestamp === 'object' && 'seconds' in timestamp) {
+        return new Date(timestamp.seconds * 1000).toLocaleDateString();
+      }
+      return 'Invalid date';
     } catch {
       return 'Invalid date';
     }

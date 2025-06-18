@@ -28,3 +28,6 @@ createRoot(document.getElementById('root')!).render(
     <Root />
   </StrictMode>
 );
+
+// Export Root component to satisfy fast refresh linting rule
+export { Root };

@@ -45,5 +45,5 @@ export const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
 
   shadows: Array(25).fill(
     '0px 1px 2px rgba(0,0,0,0.08), 0px 2px 4px rgba(0,0,0,0.04)'
-  ) as any,
+  ) as ThemeOptions['shadows'],
 });

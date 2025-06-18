@@ -43,9 +43,9 @@ export const userService = {
     return {
       uid,
       ...userData,
-      createdAt: new Date() as any, // Will be server timestamp
-      updatedAt: new Date() as any,
-      lastLoginAt: new Date() as any,
+      createdAt: serverTimestamp() as Timestamp, // Server-generated timestamp
+      updatedAt: serverTimestamp() as Timestamp,
+      lastLoginAt: serverTimestamp() as Timestamp,
     };
   },
 

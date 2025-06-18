@@ -35,9 +35,9 @@ export const useRedirectAuth = ({ onLoading, onSuccess, onError, onIdle }: UseRe
           }, 1000);
         }
         // If no redirect result, don't call onIdle() - let the main hook manage state
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Redirect auth error:', err);
-        onError(getAuthErrorMessage(err.code));
+        onError(getAuthErrorMessage((err as { code?: string })?.code || 'unknown'));
         
         setTimeout(() => {
           onIdle();

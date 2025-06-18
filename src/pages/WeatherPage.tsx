@@ -20,18 +20,22 @@ const WeatherPage = () => {
   // Weather API hook
   const { weatherState, fetchWeatherData, isLoading, hasData } = useWeatherApi();
 
-  // Transform weather data to chart data (with serialized dependency to reduce recalculations)
+  // Memoize variable arrays to prevent unnecessary recalculations
+  const memoizedHourlyVariables = useMemo(() => selectedHourlyVariables, [selectedHourlyVariables]);
+  const memoizedDailyVariables = useMemo(() => selectedDailyVariables, [selectedDailyVariables]);
+
+  // Transform weather data to chart data (with memoized dependencies)
   const visualizationSections = useMemo(() => {
     if (!weatherState.data) return [];
     return transformWeatherDataToCharts(
       weatherState.data,
-      selectedHourlyVariables,
-      selectedDailyVariables
+      memoizedHourlyVariables,
+      memoizedDailyVariables
     );
   }, [
     weatherState.data, 
-    selectedHourlyVariables.join(','), // Serialize arrays to reduce unnecessary recalculations
-    selectedDailyVariables.join(',')
+    memoizedHourlyVariables,
+    memoizedDailyVariables
   ]);
 
   // Initialize default values
