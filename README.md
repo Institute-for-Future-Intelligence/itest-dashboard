@@ -79,6 +79,3 @@ For detailed documentation, please see the [`docs/`](docs/) folder:
 - **Development process**: See [Development Workflow](docs/02-DEVELOPMENT-WORKFLOW.md)
 - **Technical details**: Check [Architecture Documentation](docs/03-ARCHITECTURE.md)
 - **Repository setup**: Follow [Repository Setup Guide](docs/04-REPOSITORY-SETUP.md)
-## Workflow Testing
-
-*This section confirms our development workflow is properly set up.*
