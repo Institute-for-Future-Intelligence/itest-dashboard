@@ -70,3 +70,15 @@ npm run dev
 
 - This app is still in active development.
 - For questions, contributions, or access, contact [andriy@intofuture.org](mailto:andriy@intofuture.org).
+
+## 📚 Documentation
+
+For detailed documentation, please see the [`docs/`](docs/) folder:
+
+- **New developers**: Start with the [Getting Started Guide](docs/01-GETTING-STARTED.md)
+- **Development process**: See [Development Workflow](docs/02-DEVELOPMENT-WORKFLOW.md)
+- **Technical details**: Check [Architecture Documentation](docs/03-ARCHITECTURE.md)
+- **Repository setup**: Follow [Repository Setup Guide](docs/04-REPOSITORY-SETUP.md)
+## Workflow Testing
+
+*This section confirms our development workflow is properly set up.*
