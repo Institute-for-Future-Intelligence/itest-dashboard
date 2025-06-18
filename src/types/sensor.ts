@@ -117,6 +117,6 @@ export interface SensorDataColumn {
   key: keyof SensorDataPoint;
   label: string;
   sortable: boolean;
-  format?: (value: any) => string;
+  format?: (value: string | number | Date | Timestamp | null | undefined) => string;
   width?: string;
 } 
