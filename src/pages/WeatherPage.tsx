@@ -20,8 +20,6 @@ const WeatherPage = () => {
   // Weather API hook
   const { weatherState, fetchWeatherData, isLoading, hasData } = useWeatherApi();
 
-  // Note: useMemo dependencies are properly handled below
-
   // Transform weather data to chart data (with serialized dependency to reduce recalculations)
   const visualizationSections = useMemo(() => {
     if (!weatherState.data) return [];

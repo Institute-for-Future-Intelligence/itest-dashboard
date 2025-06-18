@@ -216,10 +216,10 @@ export const sensorService = {
             rowIndex: i,
             isDuplicate,
             existingId: duplicateEntry?.existingId,
-            humidity: 0, // Will be overwritten if valid
-            co2: 0, // Will be overwritten if valid
-            ph: 0, // Will be overwritten if valid
-            salinity: 0, // Will be overwritten if valid
+            humidity: NaN, // Will be overwritten if valid
+            co2: NaN, // Will be overwritten if valid
+            ph: NaN, // Will be overwritten if valid
+            salinity: NaN, // Will be overwritten if valid
           };
 
           // Only include numeric fields that have valid values
@@ -284,7 +284,8 @@ export const sensorService = {
         
         batchData.forEach((dataPoint) => {
           // Remove helper fields before saving
-          const { isDuplicate, existingId, ...cleanDataPoint } = dataPoint;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { isDuplicate, existingId, rowIndex, ...cleanDataPoint } = dataPoint;
           
           if (options.overwriteDuplicates && isDuplicate && existingId) {
             // Update existing document
