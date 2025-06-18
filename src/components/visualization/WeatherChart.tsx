@@ -19,6 +19,17 @@ interface WeatherChartProps {
   config: ChartConfig;
 }
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    dataKey: string;
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  label?: string;
+}
+
 const WeatherChart = ({ config }: WeatherChartProps) => {
   const { title, type, data, series, xAxisKey, height = 300 } = config;
 
@@ -31,9 +42,9 @@ const WeatherChart = ({ config }: WeatherChartProps) => {
     });
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
-      const date = new Date(label);
+      const date = new Date(label || '');
       const formattedDate = date.toLocaleString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -47,7 +58,7 @@ const WeatherChart = ({ config }: WeatherChartProps) => {
           <Typography variant="body2" fontWeight="bold" gutterBottom>
             {formattedDate}
           </Typography>
-          {payload.map((entry: any, index: number) => {
+          {payload.map((entry, index: number) => {
             const seriesConfig = series.find(s => s.dataKey === entry.dataKey);
             return (
               <Typography

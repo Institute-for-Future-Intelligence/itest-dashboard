@@ -203,7 +203,7 @@ export const useSensorUpload = ({ userUid, onUploadComplete }: UseSensorUploadPr
 
     // No duplicates, proceed with direct upload
     await performUpload();
-  }, [upload.selectedFile, upload.validation, upload.duplicateInfo, setShowDuplicateDialog]);
+  }, [upload.selectedFile, upload.validation, upload.duplicateInfo, setShowDuplicateDialog, performUpload]);
 
   const handleSkipDuplicates = useCallback(async () => {
     await performUpload({ skipDuplicates: true });

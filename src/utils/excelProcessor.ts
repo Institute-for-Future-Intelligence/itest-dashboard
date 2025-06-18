@@ -126,7 +126,7 @@ const validateAndMapHeaders = (headers: string[]): Record<string, number> => {
   const errors: string[] = [];
   
   // Find column indices for each expected field
-  const findHeaderIndex = (expectedHeaders: string[], _fieldName: string): number => {
+  const findHeaderIndex = (expectedHeaders: string[]): number => {
     for (const expectedHeader of expectedHeaders) {
       const index = headers.findIndex(h => 
         h && h.toString().toLowerCase().trim() === expectedHeader.toLowerCase()
@@ -139,11 +139,11 @@ const validateAndMapHeaders = (headers: string[]): Record<string, number> => {
   };
   
   // Map each field
-  mapping.date = findHeaderIndex(EXPECTED_HEADERS.DATE, 'Date');
-  mapping.humidity = findHeaderIndex(EXPECTED_HEADERS.HUMIDITY, 'Humidity');
-  mapping.co2 = findHeaderIndex(EXPECTED_HEADERS.CO2, 'CO2');
-  mapping.ph = findHeaderIndex(EXPECTED_HEADERS.PH, 'pH');
-  mapping.salinity = findHeaderIndex(EXPECTED_HEADERS.SALINITY, 'Salinity');
+  mapping.date = findHeaderIndex(EXPECTED_HEADERS.DATE);
+  mapping.humidity = findHeaderIndex(EXPECTED_HEADERS.HUMIDITY);
+  mapping.co2 = findHeaderIndex(EXPECTED_HEADERS.CO2);
+  mapping.ph = findHeaderIndex(EXPECTED_HEADERS.PH);
+  mapping.salinity = findHeaderIndex(EXPECTED_HEADERS.SALINITY);
   
   // Check for missing required columns
   Object.entries(mapping).forEach(([field, index]) => {
@@ -162,7 +162,7 @@ const validateAndMapHeaders = (headers: string[]): Record<string, number> => {
 /**
  * Parse numeric values from Excel (handles various formats and edge cases)
  */
-const parseExcelNumber = (value: any): number => {
+const parseExcelNumber = (value: unknown): number => {
   if (value === null || value === undefined) return NaN;
   
   // If already a number
@@ -209,13 +209,13 @@ const parseExcelNumber = (value: any): number => {
  * Extract sensor data from a row using header mapping
  */
 const extractDataFromRow = (
-  row: any[], 
+  row: unknown[], 
   headerMapping: Record<string, number>,
   rowNumber: number,
   worksheet: XLSX.WorkSheet,
   excelRowIndex: number
 ): RawSensorData => {
-  const getValue = (field: keyof typeof headerMapping): any => {
+  const getValue = (field: keyof typeof headerMapping): unknown => {
     const index = headerMapping[field];
     if (index === -1 || index >= row.length) {
       throw new Error(`Missing value for ${field}`);
@@ -252,7 +252,7 @@ const extractDataFromRow = (
           const jsDate = new Date(excelDate.y, excelDate.m - 1, excelDate.d, excelDate.H || 0, excelDate.M || 0, excelDate.S || 0);
           return jsDate.toISOString();
         }
-      } catch (e) {
+      } catch {
         // Fall back to treating as text
       }
     }
@@ -345,8 +345,6 @@ const validateSensorDataRow = (data: RawSensorData, rowNumber: number): {
     warnings,
   };
 };
-
-
 
 /**
  * Validate file before processing

@@ -207,7 +207,7 @@ export const sensorService = {
           const isDuplicate = !!duplicateEntry;
 
           // Create data point with only valid numeric values (NaN values are omitted)
-          const dataPoint: any = {
+          const dataPoint = {
             timestamp,
             date: timestamp.toISOString().split('T')[0], // YYYY-MM-DD format for querying
             location,
@@ -216,6 +216,10 @@ export const sensorService = {
             rowIndex: i,
             isDuplicate,
             existingId: duplicateEntry?.existingId,
+            humidity: 0, // Will be overwritten if valid
+            co2: 0, // Will be overwritten if valid
+            ph: 0, // Will be overwritten if valid
+            salinity: 0, // Will be overwritten if valid
           };
 
           // Only include numeric fields that have valid values
@@ -280,7 +284,7 @@ export const sensorService = {
         
         batchData.forEach((dataPoint) => {
           // Remove helper fields before saving
-          const { rowIndex, isDuplicate, existingId, ...cleanDataPoint } = dataPoint;
+          const { isDuplicate, existingId, ...cleanDataPoint } = dataPoint;
           
           if (options.overwriteDuplicates && isDuplicate && existingId) {
             // Update existing document
