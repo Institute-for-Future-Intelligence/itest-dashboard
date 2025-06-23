@@ -134,6 +134,7 @@ export const useWaterQualityStore = create<WaterQualityStore>()(
           const data = await waterQualityService.getWaterQualityData(filters);
           set({ data, loading: false });
         } catch (error) {
+          console.error('Error loading water quality data:', error);
           const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
           set({ error: errorMessage, loading: false });
         }

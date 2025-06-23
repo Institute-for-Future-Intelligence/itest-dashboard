@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -7,7 +7,6 @@ import {
   Tab,
   Alert,
   Paper,
-  CircularProgress,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -53,22 +52,16 @@ const WaterQualityPage: React.FC = () => {
   // Water quality store
   const {
     data,
-    loading,
     error,
     form,
-    loadData,
     clearFormMessages,
   } = useWaterQualityStore();
 
   // UI state
   const [activeTab, setActiveTab] = useState(0);
 
-  // Load data on mount
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user, loadData]);
+  // Note: Data loading is now handled by individual components (table hook, etc.)
+  // No need for page-level data loading
 
   // Check permissions - for now, all users can enter and view their own data
   const userPermissions = user && user.role ? DEFAULT_PERMISSIONS[user.role] : null;
@@ -174,25 +167,13 @@ const WaterQualityPage: React.FC = () => {
 
       <TabPanel value={activeTab} index={canAdd ? 1 : 0}>
         {/* Data Viewing Tab */}
-        <Box>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <WaterQualityTable />
-          )}
-        </Box>
+        <WaterQualityTable />
       </TabPanel>
 
       <TabPanel value={activeTab} index={canAdd ? 2 : 1}>
         {/* Visualizations Tab */}
         <Box>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : data.length === 0 ? (
+          {data.length === 0 ? (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary">
                 No data available for visualization
