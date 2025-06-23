@@ -27,25 +27,44 @@ interface WaterQualityDesktopTableProps {
 }
 
 // Format functions for different data types
-const formatValue = (value: any, type: string): string => {
+const formatValue = (value: unknown, type: string): string => {
   if (value === null || value === undefined || value === '') return '—';
   
   switch (type) {
     case 'temperature':
-      return `${Number(value).toFixed(1)}°C`;
     case 'ph':
-      return Number(value).toFixed(2);
     case 'salinity':
-      return `${Number(value).toFixed(1)} ppt`;
     case 'conductivity':
-      return `${Number(value).toFixed(0)} µS/cm`;
-    case 'nutrient':
-      return `${Number(value).toFixed(2)} mg/L`;
-    case 'date':
-      return new Date(value).toLocaleDateString();
-    case 'location':
+    case 'nutrient': {
+      const numVal = Number(value);
+      if (isNaN(numVal)) return '—';
+      switch (type) {
+        case 'temperature':
+          return `${numVal.toFixed(1)}°C`;
+        case 'ph':
+          return numVal.toFixed(2);
+        case 'salinity':
+          return `${numVal.toFixed(1)} ppt`;
+        case 'conductivity':
+          return `${numVal.toFixed(0)} µS/cm`;
+        case 'nutrient':
+          return `${numVal.toFixed(2)} mg/L`;
+        default:
+          return String(value);
+      }
+    }
+    case 'date': {
+      try {
+        const date = value instanceof Date ? value : new Date(String(value));
+        return date.toLocaleDateString();
+      } catch {
+        return String(value);
+      }
+    }
+    case 'location': {
       const location = WATER_QUALITY_LOCATIONS.find(loc => loc.id === value);
-      return location ? location.name : value;
+      return location ? location.name : String(value);
+    }
     default:
       return String(value);
   }

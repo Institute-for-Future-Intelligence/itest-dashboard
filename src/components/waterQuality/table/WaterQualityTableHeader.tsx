@@ -23,12 +23,18 @@ interface WaterQualityTableHeaderProps {
   showFilters: boolean;
 }
 
-const formatValue = (value: any, type: string): string => {
+const formatValue = (value: unknown, type: string): string => {
   if (value === null || value === undefined || value === '') return '';
   
   switch (type) {
-    case 'date':
-      return new Date(value).toLocaleDateString();
+    case 'date': {
+      try {
+        const date = value instanceof Date ? value : new Date(String(value));
+        return date.toLocaleDateString();
+      } catch {
+        return String(value);
+      }
+    }
     default:
       return String(value);
   }

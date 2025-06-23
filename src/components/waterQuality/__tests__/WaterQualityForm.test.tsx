@@ -64,7 +64,7 @@ describe('WaterQualityForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useWaterQualityForm as any).mockReturnValue(mockHookReturn);
+    (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockHookReturn);
   });
 
   describe('Form Rendering', () => {
@@ -150,7 +150,7 @@ describe('WaterQualityForm', () => {
 
   describe('Form States', () => {
     it('should show loading state when submitting', () => {
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         isSubmitting: true,
       });
@@ -163,7 +163,7 @@ describe('WaterQualityForm', () => {
     });
 
     it('should display draft saved indicator', () => {
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         showDraftSaved: true,
       });
@@ -174,7 +174,7 @@ describe('WaterQualityForm', () => {
     });
 
     it('should show success message after submission', () => {
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         submitSuccess: true,
       });
@@ -187,7 +187,7 @@ describe('WaterQualityForm', () => {
     });
 
     it('should show error message on submission failure', () => {
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         submitError: 'Failed to submit data',
       });
@@ -208,7 +208,7 @@ describe('WaterQualityForm', () => {
         warnings: [],
       };
 
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         validation: validationErrors,
       });
@@ -229,7 +229,7 @@ describe('WaterQualityForm', () => {
         },
       };
 
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         validation: validationWarnings,
       });
@@ -255,7 +255,7 @@ describe('WaterQualityForm', () => {
     });
 
     it('should show location information when location is selected', () => {
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         formData: {
           ...defaultFormData,
@@ -283,7 +283,7 @@ describe('WaterQualityForm', () => {
         salinity: '35.0',
       };
 
-      (useWaterQualityForm as any).mockReturnValue({
+      (useWaterQualityForm as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         ...mockHookReturn,
         formData: filledFormData,
       });

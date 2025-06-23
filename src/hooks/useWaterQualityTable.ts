@@ -27,7 +27,7 @@ export const useWaterQualityTable = () => {
       hasLoadedRef.current = user.uid;
       loadData();
     }
-  }, [user?.uid]); // Only depend on user.uid (stable)
+  }, [user?.uid, loading, loadData]); // Include all dependencies
   
   // Handle sorting
   const handleSort = useCallback((field: keyof WaterQualityDataPoint) => {

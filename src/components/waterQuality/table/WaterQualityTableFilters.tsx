@@ -63,13 +63,13 @@ const WaterQualityTableFilters: React.FC = memo(() => {
   });
   
   // Handle local filter changes
-  const handleFilterChange = useCallback((key: keyof WaterQualityFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof WaterQualityFilters, value: unknown) => {
     const newFilters = { ...filterUI.localFilters };
     
     if (value === null || value === undefined || value === '') {
       delete newFilters[key];
     } else {
-      (newFilters as any)[key] = value;
+      (newFilters as Record<string, unknown>)[key] = value;
     }
     
     setLocalFilters(newFilters);
