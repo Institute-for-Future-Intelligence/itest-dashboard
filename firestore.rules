@@ -35,16 +35,16 @@ service cloud.firestore {
 
     // === WATER QUALITY DATA ===
     // All authenticated users can create water quality entries
-    // Students can only read their own entries
+    // Users can only read/modify their own entries
     // Educators and admins can read all entries
-    match /waterQuality/{entryId} {
+    match /waterQualityData/{entryId} {
       allow create: if isAuthenticated();
       allow read: if isAuthenticated() && (
-        resource.data.studentId == request.auth.uid || 
+        resource.data.enteredBy == request.auth.uid || 
         isEducatorOrAdmin()
       );
       allow update: if isAuthenticated() && (
-        resource.data.studentId == request.auth.uid || 
+        resource.data.enteredBy == request.auth.uid || 
         isEducatorOrAdmin()
       );
       allow delete: if isEducatorOrAdmin();
