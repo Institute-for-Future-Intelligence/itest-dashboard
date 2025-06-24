@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Label,
 } from 'recharts';
 import { Paper, Typography, Box } from '@mui/material';
 import type { ChartConfig } from '../../types/chart';
@@ -31,7 +32,7 @@ interface TooltipProps {
 }
 
 const WeatherChart = ({ config }: WeatherChartProps) => {
-  const { title, type, data, series, xAxisKey, height = 300 } = config;
+  const { title, type, data, series, xAxisKey, xAxisLabel, yAxisLabel, height = 300 } = config;
 
   const formatXAxisLabel = (value: string) => {
     const date = new Date(value);
@@ -79,20 +80,48 @@ const WeatherChart = ({ config }: WeatherChartProps) => {
   const renderChart = () => {
     const commonProps = {
       data,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
+      margin: { top: 5, right: 30, left: 20, bottom: 40 }, //extended to bottom margin to possibly see the charts better
     };
+
+    const renderAxes = () => ({
+      xAxis: (
+        <XAxis
+        dataKey={xAxisKey}
+        tickFormatter={formatXAxisLabel}
+        interval="preserveStartEnd"
+        >
+          {xAxisLabel && (
+            <Label 
+              value={xAxisLabel} 
+              offset={-5} 
+              position="insideBottom" 
+            />
+          )}
+        </XAxis>
+      ),
+      yAxis: (
+        <YAxis>
+          {yAxisLabel && (
+            <Label 
+              value={yAxisLabel} 
+              angle={-90} 
+              position="insideLeft" 
+              style={{ textAnchor: 'middle' }}
+            />
+          )}
+        </YAxis>
+      )
+    });
+
+    const { xAxis, yAxis } = renderAxes();
 
     switch (type) {
       case 'line':
         return (
           <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey={xAxisKey} 
-              tickFormatter={formatXAxisLabel}
-              interval="preserveStartEnd"
-            />
-            <YAxis />
+            {xAxis}
+            {yAxis}
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {series.map((s) => (
@@ -115,12 +144,8 @@ const WeatherChart = ({ config }: WeatherChartProps) => {
         return (
           <BarChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey={xAxisKey} 
-              tickFormatter={formatXAxisLabel}
-              interval="preserveStartEnd"
-            />
-            <YAxis />
+            {xAxis}
+            {yAxis}
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {series.map((s) => (
@@ -139,12 +164,8 @@ const WeatherChart = ({ config }: WeatherChartProps) => {
         return (
           <AreaChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey={xAxisKey} 
-              tickFormatter={formatXAxisLabel}
-              interval="preserveStartEnd"
-            />
-            <YAxis />
+            {xAxis}
+            {yAxis}
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {series.map((s, index) => (

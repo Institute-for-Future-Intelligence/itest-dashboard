@@ -17,6 +17,8 @@ export interface ChartConfig {
   data: ChartDataPoint[];
   series: ChartSeries[];
   xAxisKey: string;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
   height?: number;
 }
 
