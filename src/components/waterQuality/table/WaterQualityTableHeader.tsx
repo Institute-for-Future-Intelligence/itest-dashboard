@@ -105,6 +105,35 @@ const WaterQualityTableHeader: React.FC<WaterQualityTableHeaderProps> = memo(({
             } else if (key === 'location') {
               const location = WATER_QUALITY_LOCATIONS.find(loc => loc.id === value);
               label = `Location: ${location?.name || value}`;
+            } else if (key.endsWith('Range') && typeof value === 'object' && 'min' in value && 'max' in value) {
+              // Handle range filters (temperatureRange, phRange, salinityRange, etc.)
+              const paramName = key.replace('Range', '');
+              const capitalizedParam = paramName.charAt(0).toUpperCase() + paramName.slice(1);
+              const rangeValue = value as { min: number; max: number };
+              
+              // Add appropriate units based on parameter type
+              let unit = '';
+              switch (paramName) {
+                case 'temperature':
+                  unit = '°C';
+                  break;
+                case 'salinity':
+                  unit = 'ppt';
+                  break;
+                case 'conductivity':
+                  unit = 'µS/cm';
+                  break;
+                case 'nitrate':
+                case 'nitrite':
+                case 'ammonia':
+                case 'phosphate':
+                  unit = 'mg/L';
+                  break;
+                default:
+                  unit = '';
+              }
+              
+              label = `${capitalizedParam}: ${rangeValue.min} - ${rangeValue.max}${unit ? ` ${unit}` : ''}`;
             } else {
               label = `${key}: ${value}`;
             }
