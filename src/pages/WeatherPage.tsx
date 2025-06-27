@@ -1,61 +1,62 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Box, Container, Stack, Typography } from '@mui/material';
 import WeatherSidebar from '../components/weather/WeatherSidebar';
 import WeatherContent from '../components/weather/WeatherContent';
 import { useWeatherApi } from '../hooks/useWeatherApi';
+import { useWeatherStore } from '../store/useWeatherStore';
 import { transformWeatherDataToCharts } from '../utils/chartDataTransformer';
-import type { Location, DateRange } from '../types/weather';
 import { HAWAII_LOCATIONS } from '../utils/weatherConfig';
 
 const WeatherPage = () => {
-  // State management
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: '',
-    endDate: '',
-  });
-  const [selectedHourlyVariables, setSelectedHourlyVariables] = useState<string[]>([]);
-  const [selectedDailyVariables, setSelectedDailyVariables] = useState<string[]>([]);
+  // Zustand store
+  const {
+    selectedLocation,
+    dateRange,
+    selectedHourlyVariables,
+    selectedDailyVariables,
+    setSelectedLocation,
+    setDateRange,
+    setSelectedHourlyVariables,
+    setSelectedDailyVariables,
+  } = useWeatherStore();
 
   // Weather API hook
   const { weatherState, fetchWeatherData, isLoading, hasData } = useWeatherApi();
-
-  // Memoize variable arrays to prevent unnecessary recalculations
-  const memoizedHourlyVariables = useMemo(() => selectedHourlyVariables, [selectedHourlyVariables]);
-  const memoizedDailyVariables = useMemo(() => selectedDailyVariables, [selectedDailyVariables]);
 
   // Transform weather data to chart data (with memoized dependencies)
   const visualizationSections = useMemo(() => {
     if (!weatherState.data) return [];
     return transformWeatherDataToCharts(
       weatherState.data,
-      memoizedHourlyVariables,
-      memoizedDailyVariables
+      selectedHourlyVariables,
+      selectedDailyVariables
     );
   }, [
     weatherState.data, 
-    memoizedHourlyVariables,
-    memoizedDailyVariables
+    selectedHourlyVariables,
+    selectedDailyVariables
   ]);
 
   // Initialize default values
   useEffect(() => {
-    // Set default location to Pearl Harbor
-    if (HAWAII_LOCATIONS.length > 0) {
+    // Set default location to Pearl Harbor if not already set
+    if (!selectedLocation && HAWAII_LOCATIONS.length > 0) {
       setSelectedLocation(HAWAII_LOCATIONS[0]);
     }
 
-    // Set default date range (last 7 days)
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() - 1); // Yesterday
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 7); // 7 days ago
+    // Set default date range (last 7 days) if not already set
+    if (!dateRange.startDate || !dateRange.endDate) {
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() - 1); // Yesterday
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7); // 7 days ago
 
-    setDateRange({
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-    });
-  }, []);
+      setDateRange({
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      });
+    }
+  }, [selectedLocation, dateRange, setSelectedLocation, setDateRange]);
 
   // Handle API data fetching
   const handleFetchData = async () => {
