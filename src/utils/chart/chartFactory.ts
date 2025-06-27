@@ -14,12 +14,25 @@ export const createChart = (
 ): ChartConfig => {
   const series = createChartSeries(group.variables);
 
+  /**
+   * generates a ChartConfig obj to inclide axis keys and labels
+   */
+  const firstVar = group.variables[0];
+  const variableMeta = [...HOURLY_VARIABLES, ...DAILY_VARIABLES].find(
+    v => v.apiParam === firstVar
+  );
+
+  const xAxisLabel = xAxisKey === 'time' ? 'Time of Day' : 'Date';
+  const yAxisLabel = variableMeta ? `${variableMeta.name} (${variableMeta.unit})` : 'Unit';
+
   return {
     title: group.name,
     type: group.type,
     data: dataPoints,
     series,
     xAxisKey,
+    xAxisLabel,
+    yAxisLabel,
     height,
   };
 };
