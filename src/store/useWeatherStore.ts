@@ -13,6 +13,7 @@ interface WeatherState {
   dateRange: DateRange;
   selectedHourlyVariables: string[];
   selectedDailyVariables: string[];
+  isVariableSelectorCollapsed: boolean;
   
   // Actions
   setData: (data: WeatherApiResponse | null) => void;
@@ -22,6 +23,8 @@ interface WeatherState {
   setDateRange: (dateRange: DateRange) => void;
   setSelectedHourlyVariables: (variables: string[]) => void;
   setSelectedDailyVariables: (variables: string[]) => void;
+  setVariableSelectorCollapsed: (collapsed: boolean) => void;
+  toggleVariableSelectorCollapse: () => void;
   
   // Computed getters
   hasData: () => boolean;
@@ -44,6 +47,7 @@ export const useWeatherStore = create<WeatherState>()(
       dateRange: { startDate: '', endDate: '' },
       selectedHourlyVariables: [],
       selectedDailyVariables: [],
+      isVariableSelectorCollapsed: false,
       
       // Simple actions
       setData: (data) => set({ data, error: null }),
@@ -53,6 +57,10 @@ export const useWeatherStore = create<WeatherState>()(
       setDateRange: (dateRange) => set({ dateRange }),
       setSelectedHourlyVariables: (selectedHourlyVariables) => set({ selectedHourlyVariables }),
       setSelectedDailyVariables: (selectedDailyVariables) => set({ selectedDailyVariables }),
+      setVariableSelectorCollapsed: (isVariableSelectorCollapsed) => set({ isVariableSelectorCollapsed }),
+      toggleVariableSelectorCollapse: () => set((state) => ({ 
+        isVariableSelectorCollapsed: !state.isVariableSelectorCollapsed 
+      })),
       
       // Computed getters
       hasData: () => !!get().data,
@@ -82,6 +90,7 @@ export const useWeatherStore = create<WeatherState>()(
         dateRange: { startDate: '', endDate: '' },
         selectedHourlyVariables: [],
         selectedDailyVariables: [],
+        isVariableSelectorCollapsed: false,
       }),
     }),
     { name: 'weather-store' }

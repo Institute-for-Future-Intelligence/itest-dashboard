@@ -1,7 +1,6 @@
-import { Box, Paper, Stack } from '@mui/material';
-import VariableSelector from './VariableSelector';
+import { Box } from '@mui/material';
+import WeatherVariableTabs from './WeatherVariableTabs';
 import VisualizationContainer from '../visualization/VisualizationContainer';
-import { HOURLY_VARIABLES, DAILY_VARIABLES } from '../../utils/weatherConfig';
 import type { VisualizationSection } from '../../types/chart';
 
 interface WeatherContentProps {
@@ -23,36 +22,15 @@ const WeatherContent = ({
 }: WeatherContentProps) => {
   return (
     <Box>
-      {/* Variable Selectors */}
-      <Box sx={{ mb: 4 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          {/* Hourly Variables - Left Side */}
-          <Box sx={{ flex: 1 }}>
-            <Paper sx={{ p: 3 }}>
-              <VariableSelector
-                title="Hourly Variables"
-                variables={HOURLY_VARIABLES}
-                selectedVariables={selectedHourlyVariables}
-                onVariableChange={onHourlyVariablesChange}
-              />
-            </Paper>
-          </Box>
+      {/* Variable Selector with Tabs */}
+      <WeatherVariableTabs
+        selectedHourlyVariables={selectedHourlyVariables}
+        selectedDailyVariables={selectedDailyVariables}
+        onHourlyVariablesChange={onHourlyVariablesChange}
+        onDailyVariablesChange={onDailyVariablesChange}
+      />
 
-          {/* Daily Variables - Right Side */}
-          <Box sx={{ flex: 1 }}>
-            <Paper sx={{ p: 3 }}>
-              <VariableSelector
-                title="Daily Variables"
-                variables={DAILY_VARIABLES}
-                selectedVariables={selectedDailyVariables}
-                onVariableChange={onDailyVariablesChange}
-              />
-            </Paper>
-          </Box>
-        </Stack>
-      </Box>
-
-      {/* Visualization Area - Now naturally expanding */}
+      {/* Visualization Area */}
       <Box>
         <VisualizationContainer
           sections={visualizationSections}
