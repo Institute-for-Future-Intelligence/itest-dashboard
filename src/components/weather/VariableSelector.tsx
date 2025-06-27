@@ -3,7 +3,6 @@ import {
   Typography,
   Button,
   Stack,
-  Chip,
   Divider,
 } from '@mui/material';
 import { VariableCategory } from './variable-selector';
@@ -67,12 +66,20 @@ const VariableSelector = ({
             {title}
           </Typography>
           {selectedVariables.length > 0 && (
-            <Chip 
-              label={`${selectedVariables.length} selected`} 
-              size="small" 
+            <Typography 
+              variant="caption" 
               color="primary" 
-              variant="outlined"
-            />
+              sx={{ 
+                px: 1, 
+                py: 0.25, 
+                border: 1, 
+                borderColor: 'primary.main', 
+                borderRadius: 3,
+                fontWeight: 500
+              }}
+            >
+              {selectedVariables.length} selected
+            </Typography>
           )}
         </Box>
         <Stack direction="row" spacing={1}>
