@@ -16,6 +16,7 @@ export const useWeatherApi = () => {
       start_date: params.dateRange.startDate,
       end_date: params.dateRange.endDate,
       timezone: 'Pacific/Honolulu', // Hawaii timezone
+      temperature_unit: 'fahrenheit', // Use Fahrenheit for temperature values
     });
 
     // Add hourly variables if any selected

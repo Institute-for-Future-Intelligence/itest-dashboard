@@ -22,7 +22,7 @@ export const HAWAII_LOCATIONS: Location[] = [
 ];
 
 export const HOURLY_VARIABLES: WeatherVariable[] = [
-  { name: 'Temperature', unit: '°C', apiParam: 'temperature_2m', category: 'temperature' },
+  { name: 'Temperature', unit: '°F', apiParam: 'temperature_2m', category: 'temperature' },
   { name: 'Humidity', unit: '%', apiParam: 'relative_humidity_2m', category: 'humidity' },
   { name: 'Precipitation', unit: 'mm', apiParam: 'precipitation', category: 'precipitation' },
   { name: 'Pressure', unit: 'hPa', apiParam: 'surface_pressure', category: 'pressure' },
@@ -39,9 +39,9 @@ export const HOURLY_VARIABLES: WeatherVariable[] = [
 ];
 
 export const DAILY_VARIABLES: WeatherVariable[] = [
-  { name: 'Max Temperature', unit: '°C', apiParam: 'temperature_2m_max', category: 'temperature' },
-  { name: 'Min Temperature', unit: '°C', apiParam: 'temperature_2m_min', category: 'temperature' },
-  { name: 'Mean Temperature', unit: '°C', apiParam: 'temperature_2m_mean', category: 'temperature' },
+  { name: 'Max Temperature', unit: '°F', apiParam: 'temperature_2m_max', category: 'temperature' },
+  { name: 'Min Temperature', unit: '°F', apiParam: 'temperature_2m_min', category: 'temperature' },
+  { name: 'Mean Temperature', unit: '°F', apiParam: 'temperature_2m_mean', category: 'temperature' },
   { name: 'Daylight Duration', unit: 's', apiParam: 'daylight_duration', category: 'other' },
   { name: 'Sunshine Duration', unit: 's', apiParam: 'sunshine_duration', category: 'other' },
   { name: 'Precipitation Hours', unit: 'h', apiParam: 'precipitation_hours', category: 'precipitation' },
