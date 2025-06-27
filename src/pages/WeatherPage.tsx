@@ -74,7 +74,7 @@ const WeatherPage = () => {
   };
 
   return (
-    <Container maxWidth={false} sx={{ py: 3, height: '100vh' }}>
+    <Container maxWidth={false} sx={{ py: 3 }}>
       <Typography variant="h4" gutterBottom>
         Weather Data Analysis
       </Typography>
@@ -83,9 +83,23 @@ const WeatherPage = () => {
         Analyze historical weather data for Hawaii locations using Open Meteo API
       </Typography>
 
-      <Stack direction="row" spacing={3} sx={{ height: 'calc(100vh - 200px)' }}>
-        {/* Left Sidebar - 20% */}
-        <Box sx={{ width: '20%', minWidth: '300px' }}>
+      <Stack 
+        direction={{ xs: 'column', lg: 'row' }} 
+        spacing={3} 
+        sx={{ alignItems: 'flex-start' }}
+      >
+        {/* Left Sidebar - Sticky on larger screens */}
+        <Box 
+          sx={{ 
+            width: { xs: '100%', lg: '300px' },
+            flexShrink: 0,
+            position: { xs: 'static', lg: 'sticky' },
+            top: { lg: 24 },
+            alignSelf: { lg: 'flex-start' },
+            maxHeight: { lg: 'calc(100vh - 48px)' },
+            overflow: { lg: 'auto' }
+          }}
+        >
           <WeatherSidebar
             selectedLocation={selectedLocation}
             dateRange={dateRange}
@@ -101,8 +115,8 @@ const WeatherPage = () => {
           />
         </Box>
 
-        {/* Main Content - 80% */}
-        <Box sx={{ flex: 1 }}>
+        {/* Main Content - Naturally expanding */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <WeatherContent
             selectedHourlyVariables={selectedHourlyVariables}
             selectedDailyVariables={selectedDailyVariables}

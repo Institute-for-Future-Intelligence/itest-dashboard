@@ -22,13 +22,13 @@ const WeatherContent = ({
   onDailyVariablesChange,
 }: WeatherContentProps) => {
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box>
       {/* Variable Selectors */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 4 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
           {/* Hourly Variables - Left Side */}
           <Box sx={{ flex: 1 }}>
-            <Paper sx={{ p: 3, maxHeight: '400px', overflow: 'auto' }}>
+            <Paper sx={{ p: 3 }}>
               <VariableSelector
                 title="Hourly Variables"
                 variables={HOURLY_VARIABLES}
@@ -40,7 +40,7 @@ const WeatherContent = ({
 
           {/* Daily Variables - Right Side */}
           <Box sx={{ flex: 1 }}>
-            <Paper sx={{ p: 3, maxHeight: '400px', overflow: 'auto' }}>
+            <Paper sx={{ p: 3 }}>
               <VariableSelector
                 title="Daily Variables"
                 variables={DAILY_VARIABLES}
@@ -52,8 +52,8 @@ const WeatherContent = ({
         </Stack>
       </Box>
 
-      {/* Visualization Area */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      {/* Visualization Area - Now naturally expanding */}
+      <Box>
         <VisualizationContainer
           sections={visualizationSections}
           hasData={hasData}
