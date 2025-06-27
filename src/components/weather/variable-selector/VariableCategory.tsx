@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Button,
-  Chip,
   FormGroup,
 } from '@mui/material';
 import VariableItem from './VariableItem';
@@ -37,13 +36,22 @@ const VariableCategory: React.FC<VariableCategoryProps> = ({
           {category.allSelected ? 'Unselect All' : 'Select All'}
         </Button>
         {category.someSelected && (
-          <Chip 
-            label={`${category.selectedCount}/${category.totalCount}`}
-            size="small"
-            color="secondary"
-            variant="outlined"
-            sx={{ height: 20, fontSize: '0.65rem' }}
-          />
+          <Typography 
+            variant="caption" 
+            color="secondary.main"
+            sx={{ 
+              px: 0.75, 
+              py: 0.25, 
+              border: 1, 
+              borderColor: 'secondary.main', 
+              borderRadius: 2,
+              fontSize: '0.65rem',
+              fontWeight: 500,
+              lineHeight: 1
+            }}
+          >
+            {category.selectedCount}/{category.totalCount}
+          </Typography>
         )}
       </Box>
 
