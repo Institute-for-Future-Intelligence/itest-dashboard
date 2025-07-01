@@ -26,11 +26,11 @@ vi.mock('../../components/dashboard', () => ({
 }));
 
 // Mock the useDashboard hook
-vi.mock('../../hooks/useDashboard', () => ({
-  useDashboard: vi.fn(),
-}));
+const mockUseDashboard = vi.fn();
 
-const mockUseDashboard = vi.mocked(require('../../hooks/useDashboard').useDashboard);
+vi.mock('../../hooks/useDashboard', () => ({
+  useDashboard: mockUseDashboard,
+}));
 
 describe('HomePage', () => {
   const mockHandleFeatureInteraction = vi.fn();

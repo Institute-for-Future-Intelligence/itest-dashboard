@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDashboard } from '../useDashboard';
+import { Cloud, Sensors } from '@mui/icons-material';
 
 // Mock dependencies
 const mockNavigate = vi.fn();
@@ -197,7 +198,8 @@ describe('useDashboard', () => {
       const mockFeature = {
         id: 'weather',
         title: 'Weather Data Analysis',
-        iconComponent: vi.fn().mockImplementation(() => ({ muiName: 'CloudIcon' })) as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        iconComponent: Cloud as any,
         description: 'Weather analysis',
         features: ['Feature 1'],
         path: '/weather',
@@ -221,7 +223,8 @@ describe('useDashboard', () => {
       const mockFeature = {
         id: 'sensors',
         title: 'Sensor Data Management',
-        iconComponent: vi.fn().mockImplementation(() => ({ muiName: 'SensorsIcon' })) as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        iconComponent: Sensors as any,
         description: 'Sensor management',
         features: ['Feature A'],
         path: '/sensors',
