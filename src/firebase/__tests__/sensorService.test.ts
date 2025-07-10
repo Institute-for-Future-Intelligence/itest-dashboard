@@ -67,8 +67,11 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { writeBatch, doc, collection } = await import('firebase/firestore');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (writeBatch as any).mockReturnValue(mockBatch);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (doc as any).mockReturnValue({ id: 'test-upload-id' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (collection as any).mockReturnValue({});
 
       const result = await sensorService.uploadSensorData(mockRawData, 'test-file.xlsx', 'test-user', 'test-location');
@@ -130,9 +133,12 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { writeBatch, doc, collection } = await import('firebase/firestore');
-      (writeBatch as any).mockReturnValue(mockBatch);
-      (doc as any).mockReturnValue({ id: 'test-upload-id' });
-      (collection as any).mockReturnValue({});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(writeBatch).mockReturnValue(mockBatch as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(doc).mockReturnValue({ id: 'test-upload-id' } as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(collection).mockReturnValue({} as any);
 
       const result = await sensorService.uploadSensorData(mockRawData, 'test-file.xlsx', 'test-user', 'test-location');
 
@@ -176,10 +182,14 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { getDocs, query, collection, where } = await import('firebase/firestore');
-      (getDocs as any).mockResolvedValue(mockQuerySnapshot);
-      (query as any).mockReturnValue({});
-      (collection as any).mockReturnValue({});
-      (where as any).mockReturnValue({});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(getDocs).mockResolvedValue(mockQuerySnapshot as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(query).mockReturnValue({} as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(collection).mockReturnValue({} as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(where).mockReturnValue({} as any);
 
       const result = await sensorService.getSensorData({
         temperatureRange: { min: 25.0, max: 26.0 },
@@ -228,9 +238,12 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { getDocs, query, collection } = await import('firebase/firestore');
-      (getDocs as any).mockResolvedValue(mockQuerySnapshot);
-      (query as any).mockReturnValue({});
-      (collection as any).mockReturnValue({});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(getDocs).mockResolvedValue(mockQuerySnapshot as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(query).mockReturnValue({} as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vi.mocked(collection).mockReturnValue({} as any);
 
       const result = await sensorService.getSensorDataStats();
 

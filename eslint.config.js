@@ -25,4 +25,12 @@ export default tseslint.config(
       ],
     },
   },
+  // Test files configuration - allow 'any' types for mocking
+  {
+    files: ['**/*.test.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
 )
