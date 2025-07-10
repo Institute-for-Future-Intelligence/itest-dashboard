@@ -22,6 +22,34 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = memo(({ statistics }) =>
       <Card>
         <CardContent>
           <Typography color="textSecondary" gutterBottom variant="body2">
+            Temperature
+          </Typography>
+          <Typography variant="h6">
+            {statistics.temperature.avg}°C
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Range: {statistics.temperature.min}°C - {statistics.temperature.max}°C
+          </Typography>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Typography color="textSecondary" gutterBottom variant="body2">
+            Water Temperature
+          </Typography>
+          <Typography variant="h6">
+            {statistics.waterTemperature.avg}°C
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Range: {statistics.waterTemperature.min}°C - {statistics.waterTemperature.max}°C
+          </Typography>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Typography color="textSecondary" gutterBottom variant="body2">
             Humidity
           </Typography>
           <Typography variant="h6">
@@ -29,6 +57,20 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = memo(({ statistics }) =>
           </Typography>
           <Typography variant="body2" color="textSecondary">
             Range: {statistics.humidity.min}% - {statistics.humidity.max}%
+          </Typography>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Typography color="textSecondary" gutterBottom variant="body2">
+            External Humidity
+          </Typography>
+          <Typography variant="h6">
+            {statistics.externalHumidity.avg}%
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Range: {statistics.externalHumidity.min}% - {statistics.externalHumidity.max}%
           </Typography>
         </CardContent>
       </Card>

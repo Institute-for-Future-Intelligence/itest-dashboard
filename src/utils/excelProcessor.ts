@@ -8,6 +8,9 @@ const EXPECTED_HEADERS = {
   CO2: ['co2', 'carbon dioxide', 'co₂'],
   PH: ['ph', 'acidity', 'p h'],
   SALINITY: ['salinity', 'salt', 'sal'],
+  TEMPERATURE: ['temperature', 'temp', 'air temp', 'air temperature'],
+  WATER_TEMPERATURE: ['water temperature ', 'water temperature', 'water temp', 'h2o temp', 'h2o temperature', 'wtemp'],
+  EXTERNAL_HUMIDITY: ['ext.humidity', 'ext humidity', 'external humidity', 'ext humid', 'external humid', 'ext rh', 'external rh'],
 };
 
 /**
@@ -144,6 +147,9 @@ const validateAndMapHeaders = (headers: string[]): Record<string, number> => {
   mapping.co2 = findHeaderIndex(EXPECTED_HEADERS.CO2);
   mapping.ph = findHeaderIndex(EXPECTED_HEADERS.PH);
   mapping.salinity = findHeaderIndex(EXPECTED_HEADERS.SALINITY);
+  mapping.temperature = findHeaderIndex(EXPECTED_HEADERS.TEMPERATURE);
+  mapping.waterTemperature = findHeaderIndex(EXPECTED_HEADERS.WATER_TEMPERATURE);
+  mapping.externalHumidity = findHeaderIndex(EXPECTED_HEADERS.EXTERNAL_HUMIDITY);
   
   // Check for missing required columns
   Object.entries(mapping).forEach(([field, index]) => {
@@ -268,6 +274,9 @@ const extractDataFromRow = (
       CO2: parseExcelNumber(getValue('co2')),
       pH: parseExcelNumber(getValue('ph')),
       Salinity: parseExcelNumber(getValue('salinity')),
+      Temperature: parseExcelNumber(getValue('temperature')),
+      'Water Temperature ': parseExcelNumber(getValue('waterTemperature')),
+      'Ext.Humidity': parseExcelNumber(getValue('externalHumidity')),
     };
   } catch (error) {
     throw new Error(`Row ${rowNumber}: ${error instanceof Error ? error.message : 'Data extraction failed'}`);
@@ -315,6 +324,9 @@ const validateSensorDataRow = (data: RawSensorData, rowNumber: number): {
     { field: 'CO2', value: data.CO2, min: 0, max: 5000, unit: 'ppm' },
     { field: 'pH', value: data.pH, min: 0, max: 14, unit: '' },
     { field: 'Salinity', value: data.Salinity, min: 0, max: 50, unit: 'ppt' },
+    { field: 'Temperature', value: data.Temperature, min: -50, max: 60, unit: '°C' },
+    { field: 'Water Temperature', value: data['Water Temperature '], min: -10, max: 50, unit: '°C' },
+    { field: 'Ext.Humidity', value: data['Ext.Humidity'], min: 0, max: 100, unit: '%' },
   ];
   
   // Count how many fields have valid values

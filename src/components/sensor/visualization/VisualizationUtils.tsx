@@ -9,6 +9,9 @@ export interface ChartDataPoint {
   co2: number;
   ph: number;
   salinity: number;
+  temperature: number;
+  waterTemperature: number;
+  externalHumidity: number;
 }
 
 // Shared statistics interface
@@ -17,6 +20,9 @@ export interface StatisticsData {
   co2: { avg: number; min: number; max: number };
   ph: { avg: number; min: number; max: number };
   salinity: { avg: number; min: number; max: number };
+  temperature: { avg: number; min: number; max: number };
+  waterTemperature: { avg: number; min: number; max: number };
+  externalHumidity: { avg: number; min: number; max: number };
 }
 
 // Date range interface
@@ -97,6 +103,9 @@ export const processChartData = (data: SensorDataPoint[]): ChartDataPoint[] => {
       co2: point.co2 != null ? Number(point.co2.toFixed(0)) : 0,
       ph: point.ph != null ? Number(point.ph.toFixed(2)) : 0,
       salinity: point.salinity != null ? Number(point.salinity.toFixed(2)) : 0,
+      temperature: point.temperature != null ? Number(point.temperature.toFixed(1)) : 0,
+      waterTemperature: point.waterTemperature != null ? Number(point.waterTemperature.toFixed(1)) : 0,
+      externalHumidity: point.externalHumidity != null ? Number(point.externalHumidity.toFixed(1)) : 0,
     }));
 };
 
@@ -113,13 +122,19 @@ export const calculateStatistics = (data: SensorDataPoint[]): StatisticsData => 
       co2: { avg: 0, min: 0, max: 0 },
       ph: { avg: 0, min: 0, max: 0 },
       salinity: { avg: 0, min: 0, max: 0 },
+      temperature: { avg: 0, min: 0, max: 0 },
+      waterTemperature: { avg: 0, min: 0, max: 0 },
+      externalHumidity: { avg: 0, min: 0, max: 0 },
     };
   }
 
-  const humidityValues = data.map(d => d.humidity).filter(v => v != null);
-  const co2Values = data.map(d => d.co2).filter(v => v != null);
-  const phValues = data.map(d => d.ph).filter(v => v != null);
-  const salinityValues = data.map(d => d.salinity).filter(v => v != null);
+  const humidityValues = data.map(d => d.humidity).filter(v => v != null && !isNaN(v));
+  const co2Values = data.map(d => d.co2).filter(v => v != null && !isNaN(v));
+  const phValues = data.map(d => d.ph).filter(v => v != null && !isNaN(v));
+  const salinityValues = data.map(d => d.salinity).filter(v => v != null && !isNaN(v));
+  const temperatureValues = data.map(d => d.temperature).filter(v => v != null && !isNaN(v));
+  const waterTemperatureValues = data.map(d => d.waterTemperature).filter(v => v != null && !isNaN(v));
+  const externalHumidityValues = data.map(d => d.externalHumidity).filter(v => v != null && !isNaN(v));
 
   return {
     humidity: {
@@ -142,6 +157,21 @@ export const calculateStatistics = (data: SensorDataPoint[]): StatisticsData => 
       min: salinityValues.length > 0 ? Number(Math.min(...salinityValues).toFixed(2)) : 0,
       max: salinityValues.length > 0 ? Number(Math.max(...salinityValues).toFixed(2)) : 0,
     },
+    temperature: {
+      avg: temperatureValues.length > 0 ? Number((temperatureValues.reduce((a, b) => a + b, 0) / temperatureValues.length).toFixed(1)) : 0,
+      min: temperatureValues.length > 0 ? Number(Math.min(...temperatureValues).toFixed(1)) : 0,
+      max: temperatureValues.length > 0 ? Number(Math.max(...temperatureValues).toFixed(1)) : 0,
+    },
+    waterTemperature: {
+      avg: waterTemperatureValues.length > 0 ? Number((waterTemperatureValues.reduce((a, b) => a + b, 0) / waterTemperatureValues.length).toFixed(1)) : 0,
+      min: waterTemperatureValues.length > 0 ? Number(Math.min(...waterTemperatureValues).toFixed(1)) : 0,
+      max: waterTemperatureValues.length > 0 ? Number(Math.max(...waterTemperatureValues).toFixed(1)) : 0,
+    },
+    externalHumidity: {
+      avg: externalHumidityValues.length > 0 ? Number((externalHumidityValues.reduce((a, b) => a + b, 0) / externalHumidityValues.length).toFixed(1)) : 0,
+      min: externalHumidityValues.length > 0 ? Number(Math.min(...externalHumidityValues).toFixed(1)) : 0,
+      max: externalHumidityValues.length > 0 ? Number(Math.max(...externalHumidityValues).toFixed(1)) : 0,
+    },
   };
 };
 
@@ -156,6 +186,12 @@ export const formatTooltipValue = (value: number, name: string): [string, string
       return [value.toString(), 'pH'];
     case 'salinity':
       return [`${value} ppt`, 'Salinity'];
+    case 'temperature':
+      return [`${value}°C`, 'Temperature'];
+    case 'waterTemperature':
+      return [`${value}°C`, 'Water Temperature'];
+    case 'externalHumidity':
+      return [`${value}%`, 'External Humidity'];
     default:
       return [value.toString(), name];
   }

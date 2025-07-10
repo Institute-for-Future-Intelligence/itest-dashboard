@@ -99,11 +99,17 @@ const SensorDataFiltersComponent: React.FC = memo(() => {
               co2Range={filterUI.localFilters.co2Range}
               phRange={filterUI.localFilters.phRange}
               salinityRange={filterUI.localFilters.salinityRange}
+              temperatureRange={filterUI.localFilters.temperatureRange}
+              waterTemperatureRange={filterUI.localFilters.waterTemperatureRange}
+              externalHumidityRange={filterUI.localFilters.externalHumidityRange}
               limit={filterUI.localFilters.limit}
               onHumidityRangeChange={(humidityRange) => handleFilterChange({ humidityRange })}
               onCo2RangeChange={(co2Range) => handleFilterChange({ co2Range })}
               onPhRangeChange={(phRange) => handleFilterChange({ phRange })}
               onSalinityRangeChange={(salinityRange) => handleFilterChange({ salinityRange })}
+              onTemperatureRangeChange={(temperatureRange) => handleFilterChange({ temperatureRange })}
+              onWaterTemperatureRangeChange={(waterTemperatureRange) => handleFilterChange({ waterTemperatureRange })}
+              onExternalHumidityRangeChange={(externalHumidityRange) => handleFilterChange({ externalHumidityRange })}
               onLimitChange={(limit) => handleFilterChange({ limit })}
             />
           </Box>

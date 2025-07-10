@@ -44,6 +44,9 @@ const SensorDataTable: React.FC = memo(() => {
       co2: item.co2 ?? null,
       ph: item.ph ?? null,
       salinity: item.salinity ?? null,
+      temperature: item.temperature ?? null,
+      waterTemperature: item.waterTemperature ?? null,
+      externalHumidity: item.externalHumidity ?? null,
     }));
   }, [data]);
 
