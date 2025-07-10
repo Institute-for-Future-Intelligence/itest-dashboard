@@ -196,7 +196,8 @@ export const sensorService = {
           }
 
           // Check if at least one numeric value is valid
-          const hasValidData = !isNaN(row.Humidity) || !isNaN(row.CO2) || !isNaN(row.pH) || !isNaN(row.Salinity);
+          const hasValidData = !isNaN(row.Humidity) || !isNaN(row.CO2) || !isNaN(row.pH) || !isNaN(row.Salinity) || 
+                               !isNaN(row.Temperature) || !isNaN(row['Water Temperature ']) || !isNaN(row['Ext.Humidity']);
           if (!hasValidData) {
             errors.push(`Row ${i + 1}: No valid sensor readings found`);
             continue;
@@ -220,6 +221,9 @@ export const sensorService = {
             co2: NaN, // Will be overwritten if valid
             ph: NaN, // Will be overwritten if valid
             salinity: NaN, // Will be overwritten if valid
+            temperature: NaN, // Will be overwritten if valid
+            waterTemperature: NaN, // Will be overwritten if valid
+            externalHumidity: NaN, // Will be overwritten if valid
           };
 
           // Only include numeric fields that have valid values
@@ -227,6 +231,9 @@ export const sensorService = {
           if (!isNaN(row.CO2)) dataPoint.co2 = Number(row.CO2);
           if (!isNaN(row.pH)) dataPoint.ph = Number(row.pH);
           if (!isNaN(row.Salinity)) dataPoint.salinity = Number(row.Salinity);
+          if (!isNaN(row.Temperature)) dataPoint.temperature = Number(row.Temperature);
+          if (!isNaN(row['Water Temperature '])) dataPoint.waterTemperature = Number(row['Water Temperature ']);
+          if (!isNaN(row['Ext.Humidity'])) dataPoint.externalHumidity = Number(row['Ext.Humidity']);
 
           processedData.push(dataPoint);
         } catch (error) {
@@ -403,6 +410,24 @@ export const sensorService = {
         );
       }
 
+      if (filters.temperatureRange) {
+        filteredData = filteredData.filter(
+          d => d.temperature >= filters.temperatureRange!.min && d.temperature <= filters.temperatureRange!.max
+        );
+      }
+
+      if (filters.waterTemperatureRange) {
+        filteredData = filteredData.filter(
+          d => d.waterTemperature >= filters.waterTemperatureRange!.min && d.waterTemperature <= filters.waterTemperatureRange!.max
+        );
+      }
+
+      if (filters.externalHumidityRange) {
+        filteredData = filteredData.filter(
+          d => d.externalHumidity >= filters.externalHumidityRange!.min && d.externalHumidity <= filters.externalHumidityRange!.max
+        );
+      }
+
       return filteredData;
     } catch (error) {
       console.error('Error fetching sensor data:', error);
@@ -433,10 +458,13 @@ export const sensorService = {
       }
 
       const timestamps = data.map(d => d.timestamp);
-      const humidityValues = data.map(d => d.humidity);
-      const co2Values = data.map(d => d.co2);
-      const phValues = data.map(d => d.ph);
-      const salinityValues = data.map(d => d.salinity);
+      const humidityValues = data.map(d => d.humidity).filter(v => v != null && !isNaN(v));
+      const co2Values = data.map(d => d.co2).filter(v => v != null && !isNaN(v));
+      const phValues = data.map(d => d.ph).filter(v => v != null && !isNaN(v));
+      const salinityValues = data.map(d => d.salinity).filter(v => v != null && !isNaN(v));
+      const temperatureValues = data.map(d => d.temperature).filter(v => v != null && !isNaN(v));
+      const waterTemperatureValues = data.map(d => d.waterTemperature).filter(v => v != null && !isNaN(v));
+      const externalHumidityValues = data.map(d => d.externalHumidity).filter(v => v != null && !isNaN(v));
 
       return {
         totalRecords: data.length,
@@ -445,16 +473,22 @@ export const sensorService = {
           latest: new Date(Math.max(...timestamps.map(d => d.getTime()))),
         },
         averages: {
-          humidity: humidityValues.reduce((a, b) => a + b, 0) / humidityValues.length,
-          co2: co2Values.reduce((a, b) => a + b, 0) / co2Values.length,
-          ph: phValues.reduce((a, b) => a + b, 0) / phValues.length,
-          salinity: salinityValues.reduce((a, b) => a + b, 0) / salinityValues.length,
+          humidity: humidityValues.length > 0 ? humidityValues.reduce((a, b) => a + b, 0) / humidityValues.length : 0,
+          co2: co2Values.length > 0 ? co2Values.reduce((a, b) => a + b, 0) / co2Values.length : 0,
+          ph: phValues.length > 0 ? phValues.reduce((a, b) => a + b, 0) / phValues.length : 0,
+          salinity: salinityValues.length > 0 ? salinityValues.reduce((a, b) => a + b, 0) / salinityValues.length : 0,
+          temperature: temperatureValues.length > 0 ? temperatureValues.reduce((a, b) => a + b, 0) / temperatureValues.length : 0,
+          waterTemperature: waterTemperatureValues.length > 0 ? waterTemperatureValues.reduce((a, b) => a + b, 0) / waterTemperatureValues.length : 0,
+          externalHumidity: externalHumidityValues.length > 0 ? externalHumidityValues.reduce((a, b) => a + b, 0) / externalHumidityValues.length : 0,
         },
         ranges: {
-          humidity: { min: Math.min(...humidityValues), max: Math.max(...humidityValues) },
-          co2: { min: Math.min(...co2Values), max: Math.max(...co2Values) },
-          ph: { min: Math.min(...phValues), max: Math.max(...phValues) },
-          salinity: { min: Math.min(...salinityValues), max: Math.max(...salinityValues) },
+          humidity: { min: humidityValues.length > 0 ? Math.min(...humidityValues) : 0, max: humidityValues.length > 0 ? Math.max(...humidityValues) : 0 },
+          co2: { min: co2Values.length > 0 ? Math.min(...co2Values) : 0, max: co2Values.length > 0 ? Math.max(...co2Values) : 0 },
+          ph: { min: phValues.length > 0 ? Math.min(...phValues) : 0, max: phValues.length > 0 ? Math.max(...phValues) : 0 },
+          salinity: { min: salinityValues.length > 0 ? Math.min(...salinityValues) : 0, max: salinityValues.length > 0 ? Math.max(...salinityValues) : 0 },
+          temperature: { min: temperatureValues.length > 0 ? Math.min(...temperatureValues) : 0, max: temperatureValues.length > 0 ? Math.max(...temperatureValues) : 0 },
+          waterTemperature: { min: waterTemperatureValues.length > 0 ? Math.min(...waterTemperatureValues) : 0, max: waterTemperatureValues.length > 0 ? Math.max(...waterTemperatureValues) : 0 },
+          externalHumidity: { min: externalHumidityValues.length > 0 ? Math.min(...externalHumidityValues) : 0, max: externalHumidityValues.length > 0 ? Math.max(...externalHumidityValues) : 0 },
         },
       };
     } catch (error) {

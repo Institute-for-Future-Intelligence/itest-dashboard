@@ -198,7 +198,7 @@ describe('useDashboard', () => {
       const mockFeature = {
         id: 'weather',
         title: 'Weather Data Analysis',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         iconComponent: Cloud as any,
         description: 'Weather analysis',
         features: ['Feature 1'],
@@ -223,7 +223,7 @@ describe('useDashboard', () => {
       const mockFeature = {
         id: 'sensors',
         title: 'Sensor Data Management',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         iconComponent: Sensors as any,
         description: 'Sensor management',
         features: ['Feature A'],

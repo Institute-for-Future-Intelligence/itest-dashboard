@@ -12,11 +12,17 @@ interface SensorRangeFiltersProps {
   co2Range?: SensorDataFilters['co2Range'];
   phRange?: SensorDataFilters['phRange'];
   salinityRange?: SensorDataFilters['salinityRange'];
+  temperatureRange?: SensorDataFilters['temperatureRange'];
+  waterTemperatureRange?: SensorDataFilters['waterTemperatureRange'];
+  externalHumidityRange?: SensorDataFilters['externalHumidityRange'];
   limit?: number;
   onHumidityRangeChange: (range: SensorDataFilters['humidityRange']) => void;
   onCo2RangeChange: (range: SensorDataFilters['co2Range']) => void;
   onPhRangeChange: (range: SensorDataFilters['phRange']) => void;
   onSalinityRangeChange: (range: SensorDataFilters['salinityRange']) => void;
+  onTemperatureRangeChange: (range: SensorDataFilters['temperatureRange']) => void;
+  onWaterTemperatureRangeChange: (range: SensorDataFilters['waterTemperatureRange']) => void;
+  onExternalHumidityRangeChange: (range: SensorDataFilters['externalHumidityRange']) => void;
   onLimitChange: (limit: number | undefined) => void;
 }
 
@@ -25,15 +31,83 @@ const SensorRangeFilters: React.FC<SensorRangeFiltersProps> = memo(({
   co2Range,
   phRange,
   salinityRange,
+  temperatureRange,
+  waterTemperatureRange,
+  externalHumidityRange,
   limit,
   onHumidityRangeChange,
   onCo2RangeChange,
   onPhRangeChange,
   onSalinityRangeChange,
+  onTemperatureRangeChange,
+  onWaterTemperatureRangeChange,
+  onExternalHumidityRangeChange,
   onLimitChange,
 }) => {
   return (
     <>
+      {/* Temperature Range */}
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          Temperature Range (°C)
+        </Typography>
+        <Box sx={{ px: 2 }}>
+          <Slider
+            value={[
+              temperatureRange?.min || -10,
+              temperatureRange?.max || 50,
+            ]}
+            onChange={(_e, value) =>
+              onTemperatureRangeChange({
+                min: (value as number[])[0],
+                max: (value as number[])[1],
+              })
+            }
+            valueLabelDisplay="auto"
+            min={-10}
+            max={50}
+            step={0.5}
+            marks={[
+              { value: -10, label: '-10°C' },
+              { value: 0, label: '0°C' },
+              { value: 25, label: '25°C' },
+              { value: 50, label: '50°C' },
+            ]}
+          />
+        </Box>
+      </Box>
+
+      {/* Water Temperature Range */}
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          Water Temperature Range (°C)
+        </Typography>
+        <Box sx={{ px: 2 }}>
+          <Slider
+            value={[
+              waterTemperatureRange?.min || 0,
+              waterTemperatureRange?.max || 40,
+            ]}
+            onChange={(_e, value) =>
+              onWaterTemperatureRangeChange({
+                min: (value as number[])[0],
+                max: (value as number[])[1],
+              })
+            }
+            valueLabelDisplay="auto"
+            min={0}
+            max={40}
+            step={0.5}
+            marks={[
+              { value: 0, label: '0°C' },
+              { value: 10, label: '10°C' },
+              { value: 25, label: '25°C' },
+              { value: 40, label: '40°C' },
+            ]}
+          />
+        </Box>
+      </Box>
+
       {/* Humidity Range */}
       <Box>
         <Typography variant="subtitle2" gutterBottom>
@@ -47,6 +121,36 @@ const SensorRangeFilters: React.FC<SensorRangeFiltersProps> = memo(({
             ]}
             onChange={(_e, value) =>
               onHumidityRangeChange({
+                min: (value as number[])[0],
+                max: (value as number[])[1],
+              })
+            }
+            valueLabelDisplay="auto"
+            min={0}
+            max={100}
+            step={1}
+            marks={[
+              { value: 0, label: '0%' },
+              { value: 50, label: '50%' },
+              { value: 100, label: '100%' },
+            ]}
+          />
+        </Box>
+      </Box>
+
+      {/* External Humidity Range */}
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          External Humidity Range (%)
+        </Typography>
+        <Box sx={{ px: 2 }}>
+          <Slider
+            value={[
+              externalHumidityRange?.min || 0,
+              externalHumidityRange?.max || 100,
+            ]}
+            onChange={(_e, value) =>
+              onExternalHumidityRangeChange({
                 min: (value as number[])[0],
                 max: (value as number[])[1],
               })

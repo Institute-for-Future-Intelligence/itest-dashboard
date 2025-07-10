@@ -17,6 +17,26 @@ export const TABLE_COLUMNS: SensorDataColumn[] = [
     width: '180px',
   },
   {
+    key: 'temperature',
+    label: 'Temperature (°C)',
+    sortable: true,
+    format: (value) => {
+      const num = typeof value === 'number' ? value : Number(value);
+      return !isNaN(num) ? `${num.toFixed(1)}°C` : '-';
+    },
+    width: '140px',
+  },
+  {
+    key: 'waterTemperature',
+    label: 'Water Temp (°C)',
+    sortable: true,
+    format: (value) => {
+      const num = typeof value === 'number' ? value : Number(value);
+      return !isNaN(num) ? `${num.toFixed(1)}°C` : '-';
+    },
+    width: '140px',
+  },
+  {
     key: 'humidity',
     label: 'Humidity (%)',
     sortable: true,
@@ -25,6 +45,16 @@ export const TABLE_COLUMNS: SensorDataColumn[] = [
       return !isNaN(num) ? `${num.toFixed(1)}%` : '-';
     },
     width: '120px',
+  },
+  {
+    key: 'externalHumidity',
+    label: 'Ext. Humidity (%)',
+    sortable: true,
+    format: (value) => {
+      const num = typeof value === 'number' ? value : Number(value);
+      return !isNaN(num) ? `${num.toFixed(1)}%` : '-';
+    },
+    width: '140px',
   },
   {
     key: 'co2',

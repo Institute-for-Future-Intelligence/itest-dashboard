@@ -36,7 +36,10 @@ const SortingControls: React.FC<SortingControlsProps> = memo(({
             onChange={(e) => onSortByChange(e.target.value as SensorDataFilters['sortBy'])}
           >
             <MenuItem value="timestamp">Date & Time</MenuItem>
+            <MenuItem value="temperature">Temperature</MenuItem>
+            <MenuItem value="waterTemperature">Water Temperature</MenuItem>
             <MenuItem value="humidity">Humidity</MenuItem>
+            <MenuItem value="externalHumidity">External Humidity</MenuItem>
             <MenuItem value="co2">CO₂</MenuItem>
             <MenuItem value="ph">pH</MenuItem>
             <MenuItem value="salinity">Salinity</MenuItem>

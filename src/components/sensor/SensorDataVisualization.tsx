@@ -7,7 +7,10 @@ import type { SensorDataPoint } from '../../types/sensor';
 
 // Import modular components
 import StatisticsCards from './visualization/StatisticsCards';
+import TemperatureChart from './visualization/TemperatureChart';
+import WaterTemperatureChart from './visualization/WaterTemperatureChart';
 import HumidityChart from './visualization/HumidityChart';
+import ExternalHumidityChart from './visualization/ExternalHumidityChart';
 import Co2Chart from './visualization/Co2Chart';
 import PhChart from './visualization/PhChart';
 import SalinityChart from './visualization/SalinityChart';
@@ -65,7 +68,10 @@ const SensorDataVisualization: React.FC<SensorDataVisualizationProps> = memo(({
         gap: 3, 
         mb: 3 
       }}>
+        <TemperatureChart data={chartData} formatTooltipValue={formatTooltipValue} />
+        <WaterTemperatureChart data={chartData} formatTooltipValue={formatTooltipValue} />
         <HumidityChart data={chartData} formatTooltipValue={formatTooltipValue} />
+        <ExternalHumidityChart data={chartData} formatTooltipValue={formatTooltipValue} />
         <Co2Chart data={chartData} formatTooltipValue={formatTooltipValue} />
         <PhChart data={chartData} formatTooltipValue={formatTooltipValue} />
         <SalinityChart data={chartData} formatTooltipValue={formatTooltipValue} />

@@ -10,6 +10,9 @@ export interface SensorDataPoint {
   co2: number;
   ph: number;
   salinity: number;
+  temperature: number; // Air temperature in °C
+  waterTemperature: number; // Water temperature in °C
+  externalHumidity: number; // External humidity in %
   uploadedBy: string; // user UID
   uploadedAt: Timestamp;
 }
@@ -21,6 +24,9 @@ export interface RawSensorData {
   CO2: number;
   pH: number;
   Salinity: number;
+  Temperature: number;
+  'Water Temperature ': number; // Note: trailing space in Excel
+  'Ext.Humidity': number; // Note: dot, not space
 }
 
 // Sensor data upload batch information
@@ -62,9 +68,21 @@ export interface SensorDataFilters {
     min: number;
     max: number;
   };
+  temperatureRange?: {
+    min: number;
+    max: number;
+  };
+  waterTemperatureRange?: {
+    min: number;
+    max: number;
+  };
+  externalHumidityRange?: {
+    min: number;
+    max: number;
+  };
   uploadedBy?: string;
   limit?: number;
-  sortBy?: 'timestamp' | 'humidity' | 'co2' | 'ph' | 'salinity';
+  sortBy?: 'timestamp' | 'humidity' | 'co2' | 'ph' | 'salinity' | 'temperature' | 'waterTemperature' | 'externalHumidity';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -80,12 +98,18 @@ export interface SensorDataStats {
     co2: number;
     ph: number;
     salinity: number;
+    temperature: number;
+    waterTemperature: number;
+    externalHumidity: number;
   };
   ranges: {
     humidity: { min: number; max: number };
     co2: { min: number; max: number };
     ph: { min: number; max: number };
     salinity: { min: number; max: number };
+    temperature: { min: number; max: number };
+    waterTemperature: { min: number; max: number };
+    externalHumidity: { min: number; max: number };
   };
 }
 
