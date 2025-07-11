@@ -5,11 +5,13 @@ import {
   Button, 
   Typography,
   Alert,
-  CircularProgress 
+  CircularProgress,
+  Divider
 } from '@mui/material';
 import { Download } from '@mui/icons-material';
 import LocationSelector from './LocationSelector';
 import DateRangeSelector from './DateRangeSelector';
+import WeatherExportButton from './WeatherExportButton';
 import type { Location, DateRange, WeatherApiResponse } from '../../types/weather';
 
 interface WeatherSidebarProps {
@@ -106,6 +108,19 @@ const WeatherSidebar = ({
             </Alert>
           )}
         </Box>
+
+        {/* Export Section - Only show when data is available */}
+        {hasData && weatherData && selectedLocation && (
+          <>
+            <Divider />
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Export Data
+              </Typography>
+              <WeatherExportButton />
+            </Box>
+          </>
+        )}
       </Stack>
     </Paper>
   );
