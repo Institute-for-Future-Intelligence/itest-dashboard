@@ -18,6 +18,9 @@ const WeatherPage = () => {
     setDateRange,
     setSelectedHourlyVariables,
     setSelectedDailyVariables,
+    setData,
+    setLoading,
+    setError,
   } = useWeatherStore();
 
   // Weather API hook
@@ -36,6 +39,13 @@ const WeatherPage = () => {
     selectedHourlyVariables,
     selectedDailyVariables
   ]);
+
+  // Sync weather data from API hook to Zustand store
+  useEffect(() => {
+    setData(weatherState.data);
+    setLoading(weatherState.loading);
+    setError(weatherState.error);
+  }, [weatherState.data, weatherState.loading, weatherState.error, setData, setLoading, setError]);
 
   // Initialize default values
   useEffect(() => {
