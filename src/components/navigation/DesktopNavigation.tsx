@@ -1,5 +1,5 @@
-import { Box, Button, Tooltip, useTheme } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Box, Button, Tooltip, useTheme, alpha } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home,
   Water,
@@ -27,7 +27,15 @@ const DesktopNavigation = ({ navItems }: DesktopNavigationProps) => {
   const theme = useTheme();
 
   return (
-    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+    <Box sx={{ 
+      display: { xs: 'none', md: 'flex' }, 
+      alignItems: 'center', 
+      gap: 1,
+      padding: '4px',
+      borderRadius: 2,
+      backgroundColor: alpha(theme.palette.background.default, 0.3),
+      backdropFilter: 'blur(10px)',
+    }}>
       {navItems.map((item) => (
         <Tooltip key={item.path} title={item.description} arrow>
           <Button
@@ -35,36 +43,49 @@ const DesktopNavigation = ({ navItems }: DesktopNavigationProps) => {
             startIcon={iconMap[item.iconName]}
             sx={{
               color: location.pathname === item.path 
-                ? theme.palette.secondary.main 
-                : 'rgba(255, 255, 255, 0.8)',
-              fontWeight: location.pathname === item.path ? 600 : 400,
+                ? theme.palette.primary.contrastText
+                : theme.palette.text.primary,
+              fontWeight: location.pathname === item.path ? 600 : 500,
               backgroundColor: location.pathname === item.path 
-                ? 'rgba(255, 255, 255, 0.1)' 
+                ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`
                 : 'transparent',
-              backdropFilter: location.pathname === item.path ? 'blur(10px)' : 'none',
+              backgroundImage: location.pathname === item.path
+                ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`
+                : 'none',
               borderRadius: 2,
-              px: 2,
-              py: 1,
+              px: 3,
+              py: 1.5,
               minWidth: 'auto',
-              // Remove focus outline and prevent layout shifts
-              '&:focus': {
-                outline: 'none',
-                boxShadow: 'none',
-              },
-              '&:focus-visible': {
-                outline: 'none',
-                boxShadow: 'none',
-              },
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.2s ease',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                backdropFilter: 'blur(10px)',
-                // Removed transform to prevent layout shift
+                backgroundColor: location.pathname === item.path
+                  ? alpha(theme.palette.primary.main, 0.9)
+                  : alpha(theme.palette.primary.main, 0.1),
+                transform: 'translateY(-2px)',
+                boxShadow: theme.shadows[4],
               },
               '&:active': {
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                transform: 'none', // Prevent any scaling/movement on click
+                transform: 'translateY(0)',
               },
-              transition: 'background-color 0.2s ease-in-out, backdrop-filter 0.2s ease-in-out',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: location.pathname === item.path
+                  ? 'transparent'
+                  : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                opacity: 0,
+                transition: 'opacity 0.2s ease',
+                zIndex: -1,
+              },
+              '&:hover::before': {
+                opacity: location.pathname === item.path ? 0 : 0.1,
+              },
             }}
           >
             <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
