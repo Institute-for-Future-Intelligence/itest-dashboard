@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 interface AuthStore {
-  // Auth state management
+  // Auth initialization state management
   isInitialized: boolean;
   initializationError: string | null;
   setInitialized: (initialized: boolean) => void;

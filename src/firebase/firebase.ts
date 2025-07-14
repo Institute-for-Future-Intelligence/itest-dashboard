@@ -29,3 +29,8 @@ export const analytics = getAnalytics(app);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// Force account selection dialog to appear
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});

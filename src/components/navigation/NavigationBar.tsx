@@ -7,6 +7,7 @@ import {
   Tooltip,
   useMediaQuery,
   useTheme,
+  alpha,
 } from '@mui/material';
 import { Menu as MenuIcon, Brightness4, Brightness7 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
@@ -42,27 +43,32 @@ const NavigationBar = ({ onLogout }: NavigationBarProps) => {
     <>
       <AppBar
         position="sticky"
-        color="primary"
-        elevation={1}
+        sx={{
+          backgroundColor: alpha(theme.palette.background.paper, 0.85),
+          backdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          boxShadow: theme.shadows[1],
+          color: theme.palette.text.primary,
+        }}
       >
-        <Toolbar sx={{ minHeight: 70, px: { xs: 2, sm: 3 } }}>
+        <Toolbar sx={{ 
+          minHeight: 72, 
+          px: { xs: 2, sm: 4 },
+          py: 1,
+        }}>
           {/* Left section */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {isMobile && (
               <IconButton
-                color="inherit"
                 onClick={() => setMobileMenuOpen(true)}
                 sx={{
+                  color: theme.palette.text.primary,
+                  borderRadius: 2,
+                  p: 1.5,
+                  transition: 'all 0.2s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                  '&:focus': {
-                    outline: 'none',
-                    boxShadow: 'none',
-                  },
-                  '&:focus-visible': {
-                    outline: 'none',
-                    boxShadow: 'none',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    transform: 'translateY(-1px)',
                   },
                 }}
               >
@@ -74,51 +80,64 @@ const NavigationBar = ({ onLogout }: NavigationBarProps) => {
 
           {/* Center section - Page title for mobile */}
           {isMobile && (
-            <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
+            <Box sx={{ 
+              flexGrow: 1, 
+              textAlign: 'center',
+              mx: 2,
+            }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600,
+                  fontSize: '1.1rem',
+                  color: theme.palette.text.primary,
+                  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${theme.palette.primary.main} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 {getCurrentPageTitle()}
               </Typography>
             </Box>
           )}
 
+          {/* Desktop navigation */}
+          {!isMobile && (
+            <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', mx: 4 }}>
+              <DesktopNavigation navItems={navItems} />
+            </Box>
+          )}
+
           {/* Right section */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1,
-            marginLeft: 'auto',
-          }}>
-            <DesktopNavigation navItems={navItems} />
-            
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Theme toggle */}
-            <Tooltip title="Toggle theme" arrow>
-              <IconButton 
-                onClick={colorMode.toggleMode} 
-                color="inherit"
+            <Tooltip title={`Switch to ${colorMode.mode === 'light' ? 'dark' : 'light'} theme`}>
+              <IconButton
+                onClick={colorMode.toggleMode}
                 sx={{
+                  color: theme.palette.text.primary,
+                  borderRadius: 2,
+                  p: 1.5,
+                  transition: 'all 0.2s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                  '&:focus': {
-                    outline: 'none',
-                    boxShadow: 'none',
-                  },
-                  '&:focus-visible': {
-                    outline: 'none',
-                    boxShadow: 'none',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    transform: 'translateY(-1px)',
                   },
                 }}
               >
-                {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+                {colorMode.mode === 'light' ? <Brightness4 /> : <Brightness7 />}
               </IconButton>
             </Tooltip>
 
+            {/* Profile menu */}
             <ProfileMenu onLogout={onLogout} />
           </Box>
         </Toolbar>
       </AppBar>
 
-      <MobileDrawer 
+      {/* Mobile drawer */}
+      <MobileDrawer
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         navItems={navItems}
