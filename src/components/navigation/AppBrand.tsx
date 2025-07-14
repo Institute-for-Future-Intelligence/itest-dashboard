@@ -14,7 +14,7 @@ const AppBrand = () => {
           fontWeight: 'bold',
         }}
       >
-        iT
+        NP
       </Avatar>
       <Box>
         <Typography 
@@ -26,7 +26,7 @@ const AppBrand = () => {
             fontFamily: 'inherit',
           }}
         >
-          iTEST
+          Nā Puna ʻIke
         </Typography>
         <Typography 
           variant="caption" 
@@ -38,7 +38,7 @@ const AppBrand = () => {
             fontFamily: 'inherit',
           }}
         >
-          Data Science
+          Springs of Knowledge
         </Typography>
       </Box>
     </Box>

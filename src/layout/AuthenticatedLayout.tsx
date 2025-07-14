@@ -20,7 +20,7 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   const handleLogoutClick = async () => {
     const confirmed = await confirm({
       title: 'Confirm Logout',
-      message: 'Are you sure you want to log out of the iTEST Dashboard?',
+      message: 'Are you sure you want to log out of Nā Puna ʻIke?',
       confirmText: 'Logout',
       cancelText: 'Cancel',
     });

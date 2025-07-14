@@ -62,7 +62,7 @@ const MobileDrawer = ({ open, onClose, navItems }: MobileDrawerProps) => {
     >
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
-          iTEST Dashboard
+          Nā Puna ʻIke
         </Typography>
         <Chip
           label={permissions.user?.role?.toUpperCase() || 'UNKNOWN'}

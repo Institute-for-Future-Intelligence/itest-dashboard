@@ -1,6 +1,6 @@
-# 🛠️ Repository Setup Guide
+# 📝 Repository Setup Guide
 
-This guide covers the complete setup process for maintaining the iTEST Dashboard repository, including branch protection, environment configuration, and team management.
+This guide covers the complete setup process for maintaining the Nā Puna ʻIke Dashboard repository, including branch protection, environment configuration, and team management.
 
 ## 🔒 Setting Up Branch Protection Rules
 

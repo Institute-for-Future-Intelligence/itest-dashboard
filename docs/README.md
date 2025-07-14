@@ -1,6 +1,6 @@
-# 📚 Documentation
+# 📚 Documentation - Nā Puna ʻIke Dashboard
 
-This folder contains all project documentation for the iTEST Dashboard.
+This folder contains all project documentation for the Nā Puna ʻIke Dashboard.
 
 ## 📋 Documentation Index
 

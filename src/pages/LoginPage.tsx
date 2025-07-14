@@ -47,7 +47,7 @@ function LoginPage() {
           <CardContent>
             <Stack spacing={3} alignItems="center">
               <Avatar
-                alt="iTEST"
+                alt="Nā Puna ʻIke"
                 sx={{ 
                   bgcolor: isSuccess ? '#4caf50' : 'primary.main', 
                   width: 56, 
@@ -55,12 +55,12 @@ function LoginPage() {
                   transition: 'background-color 0.3s ease-in-out',
                 }}
               >
-                {isSuccess ? <CheckIcon /> : 'I'}
+                {isSuccess ? <CheckIcon /> : 'NP'}
               </Avatar>
               
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h5" fontWeight={600}>
-                  iTEST DS Dashboard
+                  Nā Puna ʻIke
                 </Typography>
                 <AuthFeedback authState={authState} error={error} />
               </Box>

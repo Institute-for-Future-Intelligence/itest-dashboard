@@ -50,7 +50,7 @@ const DashboardHero: React.FC<DashboardHeroProps> = memo(({ roleDisplayName }) =
         color="text.secondary" 
         sx={{ mb: 3, maxWidth: '800px', mx: 'auto' }}
       >
-        Comprehensive environmental data analysis platform for the iTEST Grant Project. 
+        Comprehensive environmental data analysis platform for Nā Puna ʻIke - the springs of knowledge. 
         Query, visualize, and analyze weather, sensor, and water quality data with powerful tools and insights.
       </Typography>
 

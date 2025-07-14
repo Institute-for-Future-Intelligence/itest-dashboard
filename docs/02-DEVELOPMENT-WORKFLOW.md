@@ -1,6 +1,6 @@
 # 🔄 Development Workflow Guide
 
-This guide outlines the development workflow for the iTEST Dashboard project, including Git practices, pull request procedures, and deployment processes.
+This guide outlines the development workflow for the Nā Puna ʻIke Dashboard project, including Git practices, pull request procedures, and deployment processes.
 
 ## 🌿 Branch Strategy
 
