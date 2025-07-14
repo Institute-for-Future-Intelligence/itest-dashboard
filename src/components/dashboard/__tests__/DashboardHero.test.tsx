@@ -25,7 +25,7 @@ describe('DashboardHero', () => {
       render(<DashboardHero roleDisplayName="Student" />);
       
       expect(screen.getByText(/Comprehensive environmental data analysis platform/)).toBeInTheDocument();
-      expect(screen.getByText(/iTEST Grant Project/)).toBeInTheDocument();
+      expect(screen.getByText(/Nā Puna ʻIke/)).toBeInTheDocument();
     });
 
     it('should display the role display name', () => {

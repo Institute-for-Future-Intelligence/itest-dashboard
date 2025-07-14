@@ -1,4 +1,4 @@
-// User & Authentication Types for iTEST Dashboard
+// User & Authentication Types for Nā Puna ʻIke Dashboard
 
 export interface User {
   uid: string;

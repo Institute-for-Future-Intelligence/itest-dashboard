@@ -1,6 +1,6 @@
 # 🏗️ Architecture Documentation
 
-This document provides a comprehensive overview of the iTEST Dashboard architecture, including technical decisions, data flow patterns, and system design principles.
+This document provides a comprehensive overview of the Nā Puna ʻIke Dashboard architecture, including technical decisions, data flow patterns, and system design principles.
 
 ## 📋 Table of Contents
 
@@ -15,7 +15,7 @@ This document provides a comprehensive overview of the iTEST Dashboard architect
 
 ## 🎯 System Overview
 
-The iTEST Dashboard is a **Single Page Application (SPA)** built with modern web technologies, designed for data visualization and management in educational research contexts.
+The Nā Puna ʻIke Dashboard is a **Single Page Application (SPA)** built with modern web technologies, designed for data visualization and management in educational research contexts. The name "Nā Puna ʻIke" means "the springs of knowledge" in Hawaiian, representing sources of information and data insights.
 
 ### High-Level Architecture
 

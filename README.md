@@ -1,6 +1,6 @@
-# 📊 Data Science Dashboard (iTEST Project)
+# 📊 Nā Puna ʻIke Dashboard - Data Science Platform
 
-This is the development repository for the **Data Science Dashboard** built as part of the **iTEST Grant Project**. The app is developed using **React + TypeScript + Vite**, with data stored and managed via **Firebase (Firestore & Storage)**.
+This is the development repository for the **Nā Puna ʻIke Dashboard** - a comprehensive data science platform. The name "Nā Puna ʻIke" means "the springs of knowledge" in Hawaiian, where "puna" refers to springs that supply water for fishponds and also represents a source of information. The app is developed using **React + TypeScript + Vite**, with data stored and managed via **Firebase (Firestore & Storage)**.
 
 ---
 

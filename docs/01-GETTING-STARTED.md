@@ -1,6 +1,6 @@
-# 🚀 Onboarding Guide - iTEST Dashboard
+# �� Onboarding Guide - Nā Puna ʻIke Dashboard
 
-Welcome to the iTEST Dashboard project! This guide will help you get up to speed with the codebase, understand the project structure, and start contributing effectively.
+Welcome to the Nā Puna ʻIke Dashboard project! This guide will help you get up to speed with the codebase, understand the project structure, and start contributing effectively.
 
 ## 📋 Prerequisites
 
@@ -15,7 +15,7 @@ Before starting, ensure you have:
 
 ## 🏗️ Project Overview
 
-The iTEST Dashboard is a **React + TypeScript** web application that serves as a data visualization and management platform. It's deployed on **GitHub Pages** and uses **Firebase** for backend services (authentication, database, and file storage).
+The Nā Puna ʻIke Dashboard is a **React + TypeScript** web application that serves as a data visualization and management platform. The name "Nā Puna ʻIke" means "the springs of knowledge" in Hawaiian, representing sources of information and data insights. It's deployed on **GitHub Pages** and uses **Firebase** for backend services (authentication, database, and file storage).
 
 ### Key Features:
 - **Weather Data Page**: Real-time weather data from external APIs
