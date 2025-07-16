@@ -4,10 +4,32 @@ import { sensorService } from '../firebase/sensorService';
 import type { SensorDataPoint, SensorDataFilters, ExcelValidationResult } from '../types/sensor';
 import type { DuplicateDetectionResult } from '../firebase/sensorService';
 
+// Performance optimization constants
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+const DEBOUNCE_DELAY = 300; // 300ms debounce for filter changes
+const DEFAULT_PAGE_SIZE = 50; // Default page size for cursor pagination
+
+// Cache interface
+interface DataCache {
+  data: SensorDataPoint[];
+  timestamp: number;
+  filters: SensorDataFilters;
+  filtersHash: string;
+}
+
+// Cursor pagination interface
+interface PaginationState {
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  hasMore: boolean;
+  isLoading: boolean;
+  cursors: { [page: number]: any }; // Store cursors for each page
+  pageData: { [page: number]: SensorDataPoint[] }; // Cache page data
+}
+
 // Table state interface
 interface TableState {
-  page: number;
-  rowsPerPage: number;
   expandedRows: Set<string>;
   sortField?: keyof SensorDataPoint;
   sortDirection?: 'asc' | 'desc';
@@ -45,6 +67,12 @@ interface SensorStore {
   error: string | null;
   filters: SensorDataFilters;
   
+  // Cache state
+  cache: DataCache | null;
+  
+  // Pagination state
+  pagination: PaginationState;
+  
   // Table state
   table: TableState;
   
@@ -55,13 +83,19 @@ interface SensorStore {
   upload: UploadState;
   
   // Data actions
-  loadData: (filters?: SensorDataFilters) => Promise<void>;
+  loadData: (filters?: SensorDataFilters, forceRefresh?: boolean) => Promise<void>;
+  loadDataDebounced: (filters?: SensorDataFilters) => void;
+  loadPage: (page: number) => Promise<void>;
   setFilters: (filters: SensorDataFilters) => void;
   clearFilters: () => void;
+  clearCache: () => void;
+  
+  // Pagination actions
+  setPageSize: (pageSize: number) => void;
+  goToPage: (page: number) => void;
+  resetPagination: () => void;
   
   // Table actions
-  setPage: (page: number) => void;
-  setRowsPerPage: (rowsPerPage: number) => void;
   toggleRowExpansion: (rowId: string) => void;
   setSort: (field: keyof SensorDataPoint, direction: 'asc' | 'desc') => void;
   
@@ -85,9 +119,18 @@ interface SensorStore {
   
   // Computed getters
   getFilteredData: () => SensorDataPoint[];
-  getPaginatedData: () => SensorDataPoint[];
+  getCurrentPageData: () => SensorDataPoint[];
   getActiveFiltersCount: () => number;
+  getTotalRecordsEstimate: () => number;
 }
+
+// Helper function to create a hash from filters for cache comparison
+const createFiltersHash = (filters: SensorDataFilters): string => {
+  return JSON.stringify(filters, Object.keys(filters).sort());
+};
+
+// Debounce utility
+let debounceTimer: NodeJS.Timeout | null = null;
 
 export const useSensorStore = create<SensorStore>()(
   devtools(
@@ -98,10 +141,22 @@ export const useSensorStore = create<SensorStore>()(
       error: null,
       filters: {},
       
+      // Initial cache state
+      cache: null,
+      
+      // Initial pagination state
+      pagination: {
+        currentPage: 0,
+        pageSize: DEFAULT_PAGE_SIZE,
+        totalPages: 0,
+        hasMore: false,
+        isLoading: false,
+        cursors: {},
+        pageData: {},
+      },
+      
       // Initial table state
       table: {
-        page: 0,
-        rowsPerPage: 25,
         expandedRows: new Set(),
         sortField: undefined,
         sortDirection: undefined,
@@ -128,21 +183,126 @@ export const useSensorStore = create<SensorStore>()(
         uploadResult: null,
       },
       
-      // Data actions
-      loadData: async (filters = {}) => {
-        set({ loading: true, error: null });
-        try {
-          const data = await sensorService.getSensorData(filters);
-          set({ data, loading: false });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
-          set({ error: errorMessage, loading: false });
+      // Data actions with cursor pagination
+      loadData: async (filters = {}, forceRefresh = false) => {
+        const { cache, pagination } = get();
+        const filtersHash = createFiltersHash(filters);
+        
+        // Reset pagination when filters change
+        if (filtersHash !== createFiltersHash(get().filters)) {
+          get().resetPagination();
         }
+        
+        // Check cache first (unless forced refresh)
+        if (!forceRefresh && cache && cache.filtersHash === filtersHash) {
+          const cacheAge = Date.now() - cache.timestamp;
+          if (cacheAge < CACHE_TTL) {
+            // Use cached data and set up pagination
+            set({ 
+              data: cache.data, 
+              loading: false, 
+              error: null,
+              pagination: {
+                ...pagination,
+                pageData: { 0: cache.data.slice(0, pagination.pageSize) },
+                hasMore: cache.data.length > pagination.pageSize,
+                totalPages: Math.ceil(cache.data.length / pagination.pageSize),
+                currentPage: 0,
+              }
+            });
+            return;
+          }
+        }
+        
+        // Load first page with cursor pagination
+        await get().loadPage(0);
+      },
+      
+      // Load specific page using cursor pagination
+      loadPage: async (page: number) => {
+        const { pagination, filters } = get();
+        
+        // Check if page is already loaded
+        if (pagination.pageData[page]) {
+          set(state => ({
+            data: state.pagination.pageData[page],
+            pagination: {
+              ...state.pagination,
+              currentPage: page,
+            }
+          }));
+          return;
+        }
+        
+        set(state => ({
+          pagination: {
+            ...state.pagination,
+            isLoading: true,
+          }
+        }));
+        
+        try {
+          const cursor = page > 0 ? pagination.cursors[page - 1] : undefined;
+          const result = await sensorService.getSensorDataPaginated(
+            filters,
+            cursor,
+            pagination.pageSize
+          );
+          
+          // Update page data and cursors
+          const newPageData = { ...pagination.pageData };
+          newPageData[page] = result.data;
+          
+          const newCursors = { ...pagination.cursors };
+          if (result.lastDoc) {
+            newCursors[page] = result.lastDoc;
+          }
+          
+          set(state => ({
+            data: result.data,
+            loading: false,
+            error: null,
+            pagination: {
+              ...state.pagination,
+              currentPage: page,
+              hasMore: result.hasMore,
+              isLoading: false,
+              pageData: newPageData,
+              cursors: newCursors,
+              totalPages: result.hasMore ? page + 2 : page + 1, // Estimate
+            }
+          }));
+          
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to load page';
+          set(state => ({
+            error: errorMessage,
+            loading: false,
+            pagination: {
+              ...state.pagination,
+              isLoading: false,
+            }
+          }));
+        }
+      },
+      
+      // Debounced version of loadData
+      loadDataDebounced: (filters = {}) => {
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+        }
+        
+        debounceTimer = setTimeout(() => {
+          get().loadData(filters);
+        }, DEBOUNCE_DELAY);
       },
       
       setFilters: (filters) => {
         set({ filters });
-        get().loadData(filters);
+        // Reset pagination when filters change
+        get().resetPagination();
+        // Use debounced loading for better performance
+        get().loadDataDebounced(filters);
       },
       
       clearFilters: () => {
@@ -151,32 +311,57 @@ export const useSensorStore = create<SensorStore>()(
           filters: emptyFilters,
           filterUI: { ...get().filterUI, localFilters: emptyFilters }
         });
+        get().resetPagination();
         get().loadData(emptyFilters);
       },
       
+      clearCache: () => {
+        set({ cache: null });
+      },
+      
+      // Pagination actions
+      setPageSize: (pageSize) => {
+        set(state => ({
+          pagination: {
+            ...state.pagination,
+            pageSize,
+            currentPage: 0,
+            pageData: {},
+            cursors: {},
+          }
+        }));
+        // Reload first page with new page size
+        get().loadPage(0);
+      },
+      
+      goToPage: (page) => {
+        get().loadPage(page);
+      },
+      
+      resetPagination: () => {
+        set(state => ({
+          pagination: {
+            ...state.pagination,
+            currentPage: 0,
+            totalPages: 0,
+            hasMore: false,
+            cursors: {},
+            pageData: {},
+          }
+        }));
+      },
+      
       // Table actions
-      setPage: (page) => {
-        set(state => ({
-          table: { ...state.table, page }
-        }));
-      },
-      
-      setRowsPerPage: (rowsPerPage) => {
-        set(state => ({
-          table: { ...state.table, rowsPerPage, page: 0 }
-        }));
-      },
-      
       toggleRowExpansion: (rowId) => {
         set(state => {
-          const newExpanded = new Set(state.table.expandedRows);
-          if (newExpanded.has(rowId)) {
-            newExpanded.delete(rowId);
+          const newExpandedRows = new Set(state.table.expandedRows);
+          if (newExpandedRows.has(rowId)) {
+            newExpandedRows.delete(rowId);
           } else {
-            newExpanded.add(rowId);
+            newExpandedRows.add(rowId);
           }
           return {
-            table: { ...state.table, expandedRows: newExpanded }
+            table: { ...state.table, expandedRows: newExpandedRows }
           };
         });
       },
@@ -185,6 +370,9 @@ export const useSensorStore = create<SensorStore>()(
         set(state => ({
           table: { ...state.table, sortField: field, sortDirection: direction }
         }));
+        // Reset pagination and reload with new sort
+        get().resetPagination();
+        get().loadData(get().filters);
       },
       
       // Filter UI actions
@@ -201,8 +389,8 @@ export const useSensorStore = create<SensorStore>()(
       },
       
       applyLocalFilters: () => {
-        const { localFilters } = get().filterUI;
-        get().setFilters(localFilters);
+        const { filterUI } = get();
+        get().setFilters(filterUI.localFilters);
       },
       
       // Upload actions
@@ -286,29 +474,29 @@ export const useSensorStore = create<SensorStore>()(
       // Computed getters
       getFilteredData: () => {
         const { data } = get();
-        // Return filtered data based on current filters
-        // This could include client-side filtering if needed
         return data;
       },
       
-      getPaginatedData: () => {
-        const { table } = get();
-        const data = get().getFilteredData();
-        const startIndex = table.page * table.rowsPerPage;
-        return data.slice(startIndex, startIndex + table.rowsPerPage);
+      getCurrentPageData: () => {
+        const { data } = get();
+        return data; // Data is already paginated from Firebase
       },
       
       getActiveFiltersCount: () => {
-        const { localFilters } = get().filterUI;
-        let count = 0;
-        if (localFilters.dateRange) count++;
-        if (localFilters.location) count++;
-        if (localFilters.humidityRange) count++;
-        if (localFilters.co2Range) count++;
-        if (localFilters.phRange) count++;
-        if (localFilters.salinityRange) count++;
-        if (localFilters.uploadedBy) count++;
-        return count;
+        const { filters } = get();
+        return Object.keys(filters).filter(key => {
+          const value = filters[key as keyof SensorDataFilters];
+          return value !== undefined && value !== null && value !== '';
+        }).length;
+      },
+      
+      getTotalRecordsEstimate: () => {
+        const { pagination } = get();
+        // Estimate based on current page and hasMore
+        if (pagination.hasMore) {
+          return (pagination.currentPage + 1) * pagination.pageSize + 1; // At least one more
+        }
+        return pagination.currentPage * pagination.pageSize + (get().data.length || 0);
       },
     }),
     {

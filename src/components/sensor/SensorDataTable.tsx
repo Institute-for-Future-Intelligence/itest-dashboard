@@ -9,27 +9,30 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  LinearProgress,
+  alpha,
 } from '@mui/material';
 import { useSensorStore } from '../../store/useSensorStore';
 import TableHeader from './table/TableHeader';
 import TableDataRow from './table/TableDataRow';
 import MobileDataCard from './table/MobileDataCard';
-import { TABLE_COLUMNS, ROWS_PER_PAGE_OPTIONS } from './table/TableUtils';
+import { TABLE_COLUMNS } from './table/TableUtils';
 import type { SensorDataPoint } from '../../types/sensor';
 
 const SensorDataTable: React.FC = memo(() => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  // Zustand store selectors
+  // Zustand store selectors - updated for cursor pagination
   const data = useSensorStore(state => state.data);
   const loading = useSensorStore(state => state.loading);
+  const pagination = useSensorStore(state => state.pagination);
   const table = useSensorStore(state => state.table);
-  const getPaginatedData = useSensorStore(state => state.getPaginatedData);
+  const getTotalRecordsEstimate = useSensorStore(state => state.getTotalRecordsEstimate);
   
-  // Zustand store actions
-  const setPage = useSensorStore(state => state.setPage);
-  const setRowsPerPage = useSensorStore(state => state.setRowsPerPage);
+  // Zustand store actions - updated for cursor pagination
+  const setPageSize = useSensorStore(state => state.setPageSize);
+  const goToPage = useSensorStore(state => state.goToPage);
   const toggleRowExpansion = useSensorStore(state => state.toggleRowExpansion);
   const setSort = useSensorStore(state => state.setSort);
 
@@ -50,8 +53,8 @@ const SensorDataTable: React.FC = memo(() => {
     }));
   }, [data]);
 
-  // Get paginated data
-  const paginatedData = getPaginatedData();
+  // Get total records estimate for pagination
+  const totalRecordsEstimate = getTotalRecordsEstimate();
 
   const handleSort = (field: keyof SensorDataPoint) => {
     const newDirection = 
@@ -60,22 +63,66 @@ const SensorDataTable: React.FC = memo(() => {
   };
 
   const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
+    goToPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const newPageSize = parseInt(event.target.value, 10);
+    setPageSize(newPageSize);
   };
 
-  if (loading) {
+  // Custom pagination component with Firebase-aware features
+  const renderPaginationInfo = () => {
+    const startRecord = pagination.currentPage * pagination.pageSize + 1;
+    const endRecord = startRecord + safeData.length - 1;
+    const totalDisplay = pagination.hasMore ? `${totalRecordsEstimate}+` : totalRecordsEstimate;
+    
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          Showing {startRecord}–{endRecord} of {totalDisplay} records
+        </Typography>
+        
+        {pagination.hasMore && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              px: 1, 
+              py: 0.5, 
+              borderRadius: 1,
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              border: `1px solid ${theme.palette.primary.main}`,
+              color: theme.palette.primary.main,
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            }}
+          >
+            More available
+          </Typography>
+        )}
+        
+        {pagination.isLoading && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LinearProgress sx={{ width: 60, height: 2 }} />
+            <Typography variant="body2" color="text.secondary">
+              Loading...
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
+  if (loading && !pagination.isLoading) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
+        <LinearProgress sx={{ mb: 2 }} />
         <Typography>Loading sensor data...</Typography>
       </Box>
     );
   }
 
-  if (!safeData.length) {
+  if (!safeData.length && !loading) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="h6" color="text.secondary">
@@ -93,21 +140,28 @@ const SensorDataTable: React.FC = memo(() => {
     return (
       <Box>
         <Typography variant="h6" gutterBottom>
-          Sensor Data ({safeData.length} records)
+          Sensor Data
         </Typography>
         
-        {paginatedData.map((row) => (
+        {renderPaginationInfo()}
+        
+        {safeData.map((row) => (
           <MobileDataCard key={row.id} row={row} />
         ))}
         
         <TablePagination
           component="div"
-          count={safeData.length}
-          page={table.page}
+          count={pagination.hasMore ? -1 : totalRecordsEstimate} // -1 for unknown total
+          page={pagination.currentPage}
           onPageChange={handleChangePage}
-          rowsPerPage={table.rowsPerPage}
+          rowsPerPage={pagination.pageSize}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+          rowsPerPageOptions={[25, 50, 100]}
+          labelDisplayedRows={({ from, to, count }) => 
+            `${from}–${to} of ${count !== -1 ? count : 'many'}`
+          }
+          labelRowsPerPage="Records per page:"
+          disabled={pagination.isLoading}
         />
       </Box>
     );
@@ -118,9 +172,11 @@ const SensorDataTable: React.FC = memo(() => {
     <Paper sx={{ width: '100%' }}>
       <Box sx={{ p: 2 }}>
         <Typography variant="h6">
-          Sensor Data ({safeData.length} records)
+          Sensor Data
         </Typography>
       </Box>
+      
+      {renderPaginationInfo()}
       
       <TableContainer>
         <Table stickyHeader>
@@ -132,8 +188,8 @@ const SensorDataTable: React.FC = memo(() => {
           />
           
           <TableBody>
-            {paginatedData.map((row, index) => {
-              const previousRow = index > 0 ? paginatedData[index - 1] : undefined;
+            {safeData.map((row, index) => {
+              const previousRow = index > 0 ? safeData[index - 1] : undefined;
               const isExpanded = table.expandedRows.has(row.id);
               
               return (
@@ -153,12 +209,19 @@ const SensorDataTable: React.FC = memo(() => {
       
       <TablePagination
         component="div"
-        count={safeData.length}
-        page={table.page}
+        count={pagination.hasMore ? -1 : totalRecordsEstimate} // -1 for unknown total
+        page={pagination.currentPage}
         onPageChange={handleChangePage}
-        rowsPerPage={table.rowsPerPage}
+        rowsPerPage={pagination.pageSize}
         onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+        rowsPerPageOptions={[25, 50, 100]}
+        labelDisplayedRows={({ from, to, count }) => 
+          `${from}–${to} of ${count !== -1 ? count : 'many'}`
+        }
+        labelRowsPerPage="Records per page:"
+        disabled={pagination.isLoading}
+        showFirstButton
+        showLastButton={!pagination.hasMore}
       />
     </Paper>
   );
