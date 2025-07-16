@@ -10,6 +10,8 @@ import {
   Timestamp,
   writeBatch,
   QueryConstraint,
+  startAfter,
+  DocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type {
@@ -22,6 +24,10 @@ import type {
 
 const SENSOR_DATA_COLLECTION = 'sensorData';
 const SENSOR_UPLOADS_COLLECTION = 'sensorUploads';
+
+// Performance optimization constants
+const DEFAULT_LIMIT = 1000; // Reasonable default to prevent loading all 17k records
+const RECENT_DAYS_DEFAULT = 30; // Default to last 30 days for better performance
 
 // New interface for duplicate detection results
 export interface DuplicateDetectionResult {
@@ -342,37 +348,47 @@ export const sensorService = {
   },
 
   /**
-   * Get sensor data with filtering and pagination
+   * Get sensor data with filtering and pagination - OPTIMIZED FOR PERFORMANCE
    */
   async getSensorData(filters: SensorDataFilters = {}): Promise<SensorDataPoint[]> {
     try {
       const constraints: QueryConstraint[] = [];
       
-      // Add filters
-      if (filters.dateRange) {
+      // PERFORMANCE: Apply smart defaults to reduce query size
+      const effectiveFilters = {
+        ...filters,
+        // Default to recent data if no date range specified
+        dateRange: filters.dateRange || {
+          start: new Date(Date.now() - (RECENT_DAYS_DEFAULT * 24 * 60 * 60 * 1000)),
+          end: new Date()
+        },
+        // Apply reasonable default limit to prevent loading all 17k records
+        limit: filters.limit || DEFAULT_LIMIT
+      };
+      
+      // Add date range filter (now always present due to smart defaults)
+      if (effectiveFilters.dateRange) {
         constraints.push(
-          where('date', '>=', filters.dateRange.start.toISOString().split('T')[0]),
-          where('date', '<=', filters.dateRange.end.toISOString().split('T')[0])
+          where('date', '>=', effectiveFilters.dateRange.start.toISOString().split('T')[0]),
+          where('date', '<=', effectiveFilters.dateRange.end.toISOString().split('T')[0])
         );
       }
       
-      if (filters.location) {
-        constraints.push(where('location', '==', filters.location));
+      if (effectiveFilters.location) {
+        constraints.push(where('location', '==', effectiveFilters.location));
       }
       
-      if (filters.uploadedBy) {
-        constraints.push(where('uploadedBy', '==', filters.uploadedBy));
+      if (effectiveFilters.uploadedBy) {
+        constraints.push(where('uploadedBy', '==', effectiveFilters.uploadedBy));
       }
 
       // Add sorting
-      const sortField = filters.sortBy || 'timestamp';
-      const sortDirection = filters.sortOrder || 'desc';
+      const sortField = effectiveFilters.sortBy || 'timestamp';
+      const sortDirection = effectiveFilters.sortOrder || 'desc';
       constraints.push(orderBy(sortField, sortDirection));
 
-      // Add limit
-      if (filters.limit) {
-        constraints.push(limit(filters.limit));
-      }
+      // PERFORMANCE: Always apply limit to prevent excessive reads
+      constraints.push(limit(effectiveFilters.limit));
 
       const q = query(collection(db, SENSOR_DATA_COLLECTION), ...constraints);
       const querySnapshot = await getDocs(q);
@@ -431,6 +447,124 @@ export const sensorService = {
       return filteredData;
     } catch (error) {
       console.error('Error fetching sensor data:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get sensor data with cursor-based pagination for better performance
+   */
+  async getSensorDataPaginated(
+    filters: SensorDataFilters = {},
+    lastDoc?: DocumentSnapshot,
+    pageSize: number = 50
+  ): Promise<{ data: SensorDataPoint[]; hasMore: boolean; lastDoc?: DocumentSnapshot }> {
+    try {
+      const constraints: QueryConstraint[] = [];
+      
+      // Apply smart defaults for better performance
+      const effectiveFilters = {
+        ...filters,
+        dateRange: filters.dateRange || {
+          start: new Date(Date.now() - (RECENT_DAYS_DEFAULT * 24 * 60 * 60 * 1000)),
+          end: new Date()
+        }
+      };
+      
+      // Add date range filter
+      if (effectiveFilters.dateRange) {
+        constraints.push(
+          where('date', '>=', effectiveFilters.dateRange.start.toISOString().split('T')[0]),
+          where('date', '<=', effectiveFilters.dateRange.end.toISOString().split('T')[0])
+        );
+      }
+      
+      if (effectiveFilters.location) {
+        constraints.push(where('location', '==', effectiveFilters.location));
+      }
+      
+      if (effectiveFilters.uploadedBy) {
+        constraints.push(where('uploadedBy', '==', effectiveFilters.uploadedBy));
+      }
+
+      // Add sorting
+      const sortField = effectiveFilters.sortBy || 'timestamp';
+      const sortDirection = effectiveFilters.sortOrder || 'desc';
+      constraints.push(orderBy(sortField, sortDirection));
+
+      // Add cursor for pagination
+      if (lastDoc) {
+        constraints.push(startAfter(lastDoc));
+      }
+
+      // Add limit for pagination
+      constraints.push(limit(pageSize + 1)); // +1 to check if there are more results
+
+      const q = query(collection(db, SENSOR_DATA_COLLECTION), ...constraints);
+      const querySnapshot = await getDocs(q);
+      
+      const docs = querySnapshot.docs;
+      const hasMore = docs.length > pageSize;
+      const dataSlice = hasMore ? docs.slice(0, pageSize) : docs;
+      
+      const data: SensorDataPoint[] = dataSlice.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate() || new Date(),
+      })) as SensorDataPoint[];
+
+      // Apply client-side filters for numeric ranges
+      let filteredData = data;
+      
+      if (filters.humidityRange) {
+        filteredData = filteredData.filter(
+          d => d.humidity >= filters.humidityRange!.min && d.humidity <= filters.humidityRange!.max
+        );
+      }
+      
+      if (filters.co2Range) {
+        filteredData = filteredData.filter(
+          d => d.co2 >= filters.co2Range!.min && d.co2 <= filters.co2Range!.max
+        );
+      }
+      
+      if (filters.phRange) {
+        filteredData = filteredData.filter(
+          d => d.ph >= filters.phRange!.min && d.ph <= filters.phRange!.max
+        );
+      }
+      
+      if (filters.salinityRange) {
+        filteredData = filteredData.filter(
+          d => d.salinity >= filters.salinityRange!.min && d.salinity <= filters.salinityRange!.max
+        );
+      }
+
+      if (filters.temperatureRange) {
+        filteredData = filteredData.filter(
+          d => d.temperature >= filters.temperatureRange!.min && d.temperature <= filters.temperatureRange!.max
+        );
+      }
+
+      if (filters.waterTemperatureRange) {
+        filteredData = filteredData.filter(
+          d => d.waterTemperature >= filters.waterTemperatureRange!.min && d.waterTemperature <= filters.waterTemperatureRange!.max
+        );
+      }
+
+      if (filters.externalHumidityRange) {
+        filteredData = filteredData.filter(
+          d => d.externalHumidity >= filters.externalHumidityRange!.min && d.externalHumidity <= filters.externalHumidityRange!.max
+        );
+      }
+
+      return {
+        data: filteredData,
+        hasMore: hasMore && filteredData.length === pageSize,
+        lastDoc: hasMore ? dataSlice[dataSlice.length - 1] : undefined
+      };
+    } catch (error) {
+      console.error('Error fetching paginated sensor data:', error);
       throw error;
     }
   },

@@ -28,6 +28,7 @@ import SensorDataTable from '../components/sensor/SensorDataTable';
 import SensorDataFiltersComponent from '../components/sensor/SensorDataFilters';
 import SensorDataVisualization from '../components/sensor/SensorDataVisualization';
 import SensorLocationDisplay from '../components/sensor/SensorLocationDisplay';
+import SensorCacheStatus from '../components/sensor/SensorCacheStatus';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -58,8 +59,11 @@ const SensorPage: React.FC = () => {
     loading,
     error,
     filters,
+    pagination,
     hasData,
     currentLocation,
+    totalRecordsEstimate,
+    cacheInfo,
     handleRefresh,
   } = useSensorData();
 
@@ -182,6 +186,18 @@ const SensorPage: React.FC = () => {
         <Box>
           {/* Filters */}
           <SensorDataFiltersComponent />
+
+          {/* Cache Status & Performance Info */}
+          <Box sx={{ mb: 2 }}>
+            <SensorCacheStatus
+              cacheInfo={cacheInfo}
+              paginationInfo={pagination}
+              loading={loading}
+              recordCount={sensorData.length}
+              totalRecordsEstimate={totalRecordsEstimate}
+              onRefresh={handleRefresh}
+            />
+          </Box>
 
           {/* Location Display */}
           <SensorLocationDisplay
