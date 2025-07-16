@@ -7,7 +7,6 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { useThemeStore } from './store/useThemeStore';
 import { getDesignTokens } from './theme/theme';
 import { createTheme } from '@mui/material/styles';
-import AuthProvider from './components/auth/AuthProvider';
 
 const Root = () => {
   const mode = useThemeStore((state) => state.mode);
@@ -16,9 +15,7 @@ const Root = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <App />
     </ThemeProvider>
   );
 };

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Box, Alert, Button, Typography } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import LoadingOverlay from './LoadingOverlay';
 
@@ -10,8 +11,20 @@ interface AuthInitializerProps {
 
 const AuthInitializer = ({ children }: AuthInitializerProps) => {
   const { isInitialized, initializationError, resetAuthState } = useAuthStore();
+  const location = useLocation();
+  
+  // Define public routes that don't need to wait for auth initialization
+  // This prevents the loading spinner from showing on the login page
+  const publicRoutes = ['/', '/logout'];
+  const isPublicRoute = publicRoutes.includes(location.pathname);
+  
+  // For public routes, render immediately without waiting for auth initialization
+  // This fixes the issue where login page showed a loading spinner on first load
+  if (isPublicRoute) {
+    return <>{children}</>;
+  }
 
-  // Show loading overlay while Firebase auth is initializing
+  // For protected routes, wait for auth initialization to complete
   if (!isInitialized) {
     return <LoadingOverlay show={true} />;
   }

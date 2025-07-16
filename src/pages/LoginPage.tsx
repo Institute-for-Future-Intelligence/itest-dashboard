@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { CheckCircle as CheckIcon, WaterDropOutlined } from '@mui/icons-material';
 import { useAuthState } from '../hooks/useAuthState';
-import { AuthButton, AuthFeedback, LoadingOverlay } from '../components/auth';
+import { AuthButton, AuthFeedback } from '../components/auth';
 import Footer from '../components/layout/Footer';
 
 function LoginPage() {
@@ -39,8 +39,6 @@ function LoginPage() {
         },
       }}
     >
-      <LoadingOverlay show={authState === 'loading'} />
-
       <Box
         sx={{
           flex: 1,
@@ -53,27 +51,17 @@ function LoginPage() {
           zIndex: 1,
         }}
       >
-        <Card 
-          sx={{ 
-            width: 420, 
-            maxWidth: '100%',
+        <Card
+          sx={{
+            maxWidth: 480,
+            width: '100%',
             borderRadius: 3,
-            boxShadow: theme.shadows[6],
-            backgroundColor: alpha(theme.palette.background.paper, 0.95),
-            backdropFilter: 'blur(20px)',
+            boxShadow: theme.shadows[8],
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            transform: isSuccess ? 'scale(1.02)' : 'scale(1)',
-            transition: 'all 0.3s ease-in-out',
-            overflow: 'hidden',
+            background: alpha(theme.palette.background.paper, 0.95),
+            backdropFilter: 'blur(20px)',
           }}
         >
-          <Box
-            sx={{
-              height: 4,
-              background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-            }}
-          />
-          
           <CardContent sx={{ p: 4 }}>
             <Stack spacing={4} alignItems="center">
               <Box sx={{ position: 'relative' }}>
@@ -121,38 +109,48 @@ function LoginPage() {
                   }}
                 />
               </Box>
-              
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
+
+              <Box sx={{ textAlign: 'center', width: '100%' }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{
                     fontWeight: 700,
-                    mb: 1,
-                    background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${theme.palette.primary.main} 100%)`,
-                    backgroundClip: 'text',
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    mb: 1,
                   }}
                 >
-                  Nā Puna ʻIke
+                  {isSuccess ? 'Welcome Back!' : 'Nā Puna ʻIke'}
                 </Typography>
-                <Typography 
-                  variant="body2" 
+                
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
                   sx={{ 
-                    color: theme.palette.text.secondary,
                     fontWeight: 500,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    mb: 2,
+                    fontSize: '1.1rem',
                   }}
                 >
-                  Springs of Knowledge
+                  {isSuccess ? 'Redirecting to dashboard...' : 'Springs of Knowledge'}
                 </Typography>
+                
                 <AuthFeedback authState={authState} error={error} />
               </Box>
 
-              <Box sx={{ width: '100%' }}>
-                <AuthButton authState={authState} onLogin={handleLogin} />
+              <Box sx={{ width: '100%', maxWidth: 320 }}>
+                <AuthButton
+                  authState={authState}
+                  onLogin={handleLogin}
+                />
+              </Box>
+
+              <Box sx={{ textAlign: 'center', pt: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Data Dashboard for Environmental Research
+                </Typography>
               </Box>
             </Stack>
           </CardContent>
