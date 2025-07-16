@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { DocumentSnapshot } from 'firebase/firestore';
 import { sensorService } from '../firebase/sensorService';
 import type { SensorDataPoint, SensorDataFilters, ExcelValidationResult } from '../types/sensor';
 import type { DuplicateDetectionResult } from '../firebase/sensorService';
@@ -24,7 +25,7 @@ interface PaginationState {
   totalPages: number;
   hasMore: boolean;
   isLoading: boolean;
-  cursors: { [page: number]: any }; // Store cursors for each page
+  cursors: { [page: number]: DocumentSnapshot }; // Store cursors for each page
   pageData: { [page: number]: SensorDataPoint[] }; // Cache page data
 }
 

@@ -15,12 +15,13 @@ import {
   Refresh,
   ViewList,
 } from '@mui/icons-material';
+import type { SensorDataFilters } from '../../types/sensor';
 
 interface CacheInfo {
   age: number;
   isExpired: boolean;
   recordCount: number;
-  filters: any;
+  filters: SensorDataFilters;
 }
 
 interface PaginationInfo {

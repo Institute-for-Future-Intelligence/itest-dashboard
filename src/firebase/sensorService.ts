@@ -11,6 +11,7 @@ import {
   writeBatch,
   QueryConstraint,
   startAfter,
+  DocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type {
@@ -455,9 +456,9 @@ export const sensorService = {
    */
   async getSensorDataPaginated(
     filters: SensorDataFilters = {},
-    lastDoc?: any,
+    lastDoc?: DocumentSnapshot,
     pageSize: number = 50
-  ): Promise<{ data: SensorDataPoint[]; hasMore: boolean; lastDoc?: any }> {
+  ): Promise<{ data: SensorDataPoint[]; hasMore: boolean; lastDoc?: DocumentSnapshot }> {
     try {
       const constraints: QueryConstraint[] = [];
       

@@ -68,11 +68,8 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { writeBatch, doc, collection } = await import('firebase/firestore');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (writeBatch as any).mockReturnValue(mockBatch);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (doc as any).mockReturnValue({ id: 'test-upload-id' });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (collection as any).mockReturnValue({});
 
       const result = await sensorService.uploadSensorData(mockRawData, 'test-file.xlsx', 'test-user', 'test-location');
@@ -134,11 +131,8 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { writeBatch, doc, collection } = await import('firebase/firestore');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(writeBatch).mockReturnValue(mockBatch as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(doc).mockReturnValue({ id: 'test-upload-id' } as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(collection).mockReturnValue({} as any);
 
       const result = await sensorService.uploadSensorData(mockRawData, 'test-file.xlsx', 'test-user', 'test-location');
@@ -183,13 +177,9 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { getDocs, query, collection, where } = await import('firebase/firestore');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(getDocs).mockResolvedValue(mockQuerySnapshot as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(query).mockReturnValue({} as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(collection).mockReturnValue({} as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(where).mockReturnValue({} as any);
 
       const result = await sensorService.getSensorData({
@@ -239,11 +229,8 @@ describe('sensorService - Extended Variables', () => {
       };
 
       const { getDocs, query, collection } = await import('firebase/firestore');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(getDocs).mockResolvedValue(mockQuerySnapshot as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(query).mockReturnValue({} as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(collection).mockReturnValue({} as any);
 
       const result = await sensorService.getSensorDataStats();
@@ -418,7 +405,7 @@ describe('sensorService - Extended Variables', () => {
     });
 
     it('should handle cursor pagination with startAfter', async () => {
-      const mockCursor = { id: 'cursor-doc' };
+      const mockCursor = { id: 'cursor-doc' } as any;
       const mockQuerySnapshot = {
         docs: [
           {
