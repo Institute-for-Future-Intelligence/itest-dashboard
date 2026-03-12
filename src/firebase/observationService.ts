@@ -152,6 +152,106 @@ export const observationService = {
   },
 
   /**
+   * Seed the 6 historical records extracted from Ken Kozuma's emails (Nov 2025 – Mar 2026).
+   * Safe to call multiple times — checks for existing records by date+species first.
+   */
+  async seedHistoricalData(userId: string): Promise<{ inserted: number; skipped: number }> {
+    const OBSERVER = 'Ken Kozuma';
+    const LOCATION = 'fh_107_growth_chamber';
+
+    type SeedRecord = Omit<SeaweedObservation, 'id' | 'enteredAt' | 'enteredBy'> & { time: string };
+
+    const records: SeedRecord[] = [
+      {
+        date: '2026-02-23', time: '12:07',
+        timestamp: new Date('2026-02-23T12:07:00'),
+        species: 'ogo_manuea', location: LOCATION, observer: OBSERVER,
+        wetMassGrams: 14.9, salinity: 34.5, temperature: 71.6, temperatureUnit: 'F',
+        ph: 8.36, containerVolume: 2, containerVolumeUnit: 'gallons',
+        lightScheduleStart: '08:00', lightScheduleEnd: '18:00',
+        lightWhitePercent: 80, lightRedPercent: 90, lightBluePercent: 100,
+        generalNotes: 'Initial readings. Air stone at bottom (removed for photo). Auto lights on. Growth Chamber: FH-107.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-02-23', time: '20:24',
+        timestamp: new Date('2026-02-23T20:24:00'),
+        species: 'ogo_manuea', location: LOCATION, observer: OBSERVER,
+        wetMassGrams: 14.9, salinity: 34.5, temperature: 71.6, temperatureUnit: 'F',
+        ph: 8.45, dissolvedOxygen: 8.3, containerVolume: 2, containerVolumeUnit: 'gallons',
+        sensorIssuesNoted: true,
+        generalNotes: 'Threw out all water and started fresh — lights were throwing off DO readings. Using personal sensors, not Growth Chamber Jukebox sensors. Sensors removed from bucket.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-02-25', time: '16:39',
+        timestamp: new Date('2026-02-25T16:39:00'),
+        species: 'lepe_lepe', location: LOCATION, observer: OBSERVER,
+        wetMassGrams: 25, containerVolume: 2, containerVolumeUnit: 'gallons',
+        lightRedPercent: 20,
+        waterExchangePercent: 25, waterExchangeSource: 'main aquaponic system',
+        sensorIssuesNoted: true,
+        healthNotes: 'Lepe lepe expected to uptake nutrients slower and grow more stable.',
+        generalNotes: 'Added 25 g of Lepe Lepe to bucket. Red light dropped to 20% — red limu does not like red light. 25% water exchange with main system. pH sensor showing super low reading — likely sensor error. Main system unstable (overflow causing salinity fluctuations). Ogo not as crisp as before.',
+        dataReliability: 'uncertain',
+      },
+      {
+        date: '2026-02-26', time: '09:00',
+        timestamp: new Date('2026-02-26T09:00:00'),
+        species: 'ogo_manuea', location: LOCATION, observer: OBSERVER,
+        wetMassGrams: 17.2, salinity: 31, temperature: 70, temperatureUnit: 'F',
+        waterExchangeSource: 'personal aquaponic system',
+        sensorIssuesNoted: true,
+        generalNotes: 'Added new salt water from personal aquaponic system. Salinity pushed to 31 ppt (ocean water 30–35 ppt). Growth Chamber pH sensor giving very low readings — using personal sensor. Temp in upper 60s to low 70s °F.',
+        dataReliability: 'uncertain',
+      },
+      {
+        date: '2026-03-03', time: '09:00',
+        timestamp: new Date('2026-03-03T09:00:00'),
+        species: 'ogo_manuea', location: LOCATION, observer: OBSERVER,
+        wetMassGrams: 27.4,
+        healthNotes: "Not as crisp as it used to be. Growing but doesn't seem to like this system.",
+        generalNotes: 'Main system still recovering from overflow/salinity issues.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-03-03', time: '09:00',
+        timestamp: new Date('2026-03-03T09:00:00'),
+        species: 'lepe_lepe', location: LOCATION, observer: OBSERVER,
+        wetMassGrams: 32,
+        colorDescription: 'Good color',
+        healthNotes: 'Growing slower than ogo (expected). Seems healthier, color looks good.',
+        dataReliability: 'reliable',
+      },
+    ];
+
+    // Fetch existing records to avoid duplicates
+    const existing = await this.getObservations({ sortBy: 'date', sortOrder: 'asc', limit: 500 });
+    const existingKeys = new Set(existing.map(o => `${o.date}|${o.species}|${o.observer}`));
+
+    let inserted = 0;
+    let skipped  = 0;
+
+    for (const rec of records) {
+      const key = `${rec.date}|${rec.species}|${rec.observer}`;
+      if (existingKeys.has(key)) {
+        skipped++;
+        continue;
+      }
+
+      const { time: _time, ...rest } = rec;
+      await addDoc(collection(db, OBSERVATIONS_COLLECTION), {
+        ...rest,
+        enteredBy: userId,
+        enteredAt: serverTimestamp() as Timestamp,
+      });
+      inserted++;
+    }
+
+    return { inserted, skipped };
+  },
+
+  /**
    * Validate observation form data
    */
   validateFormData(formData: ObservationFormData): ObservationValidationResult {
