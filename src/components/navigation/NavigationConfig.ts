@@ -4,7 +4,7 @@ export interface NavigationItem {
   label: string;
   path: string;
   show: boolean;
-  iconName: 'Home' | 'Water' | 'Cloud' | 'Sensors' | 'AdminPanelSettings';
+  iconName: 'Home' | 'Water' | 'Cloud' | 'Sensors' | 'AdminPanelSettings' | 'Biotech';
   description: string;
 }
 
@@ -37,6 +37,13 @@ export const getNavItemsForUser = (permissions: ReturnType<typeof usePermissions
       show: permissions.hasPermission('canEnterWaterQuality'),
       iconName: 'Water' as const,
       description: 'Water quality measurements'
+    },
+    {
+      label: 'Observations',
+      path: '/observations',
+      show: permissions.hasPermission('canViewObservations'),
+      iconName: 'Biotech' as const,
+      description: 'Seaweed growth observations',
     },
     { 
       label: 'Admin', 

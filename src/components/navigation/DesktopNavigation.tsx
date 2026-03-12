@@ -6,6 +6,7 @@ import {
   Cloud,
   Sensors,
   AdminPanelSettings,
+  Biotech,
 } from '@mui/icons-material';
 import type { NavigationItem } from './NavigationConfig';
 
@@ -15,6 +16,7 @@ const iconMap = {
   Cloud: <Cloud />,
   Sensors: <Sensors />,
   AdminPanelSettings: <AdminPanelSettings />,
+  Biotech: <Biotech />,
 };
 
 interface DesktopNavigationProps {

@@ -305,6 +305,39 @@
       ]
     }
   ],
+    {
+      "collectionGroup": "seaweedObservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "species",  "order": "ASCENDING" },
+        { "fieldPath": "date",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "seaweedObservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "location", "order": "ASCENDING" },
+        { "fieldPath": "date",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "seaweedObservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "species",  "order": "ASCENDING" },
+        { "fieldPath": "date",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "seaweedObservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "enteredBy", "order": "ASCENDING" },
+        { "fieldPath": "date",      "order": "DESCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": [
     {
       "collectionGroup": "sensorData",

@@ -21,6 +21,7 @@ import {
   Sensors,
   AdminPanelSettings,
   WaterDropOutlined,
+  Biotech,
 } from '@mui/icons-material';
 import { usePermissions } from '../../hooks/usePermissions';
 import type { NavigationItem } from './NavigationConfig';
@@ -32,6 +33,7 @@ const iconMap = {
   Cloud: <Cloud />,
   Sensors: <Sensors />,
   AdminPanelSettings: <AdminPanelSettings />,
+  Biotech: <Biotech />,
 };
 
 interface MobileDrawerProps {

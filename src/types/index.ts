@@ -18,6 +18,7 @@ export interface RolePermissions {
   canExportData: boolean;
   canViewAnalytics: boolean;
   canModifySettings: boolean;
+  canViewObservations: boolean;
 }
 
 // Default permissions for each role
@@ -32,6 +33,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canExportData: true,
     canViewAnalytics: true,
     canModifySettings: true,
+    canViewObservations: true,
   },
   educator: {
     canViewDashboard: true,
@@ -43,6 +45,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canExportData: true,
     canViewAnalytics: true,
     canModifySettings: false,
+    canViewObservations: true,
   },
   student: {
     canViewDashboard: true,
@@ -54,5 +57,6 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canExportData: false,
     canViewAnalytics: false,
     canModifySettings: false,
+    canViewObservations: true,
   },
 }; 

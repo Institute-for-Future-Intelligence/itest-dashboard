@@ -103,6 +103,19 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // === SEAWEED OBSERVATIONS ===
+    // All authenticated users can create and read observations
+    // Educators and admins can update/delete any observation
+    match /seaweedObservations/{observationId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.enteredBy == request.auth.uid ||
+        isEducatorOrAdmin()
+      );
+      allow delete: if isEducatorOrAdmin();
+    }
+
     // === ADMIN LOGS ===
     // Only admins can access admin logs
     match /adminLogs/{logId} {

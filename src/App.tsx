@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import WeatherPage from './pages/WeatherPage';
 import SensorPage from './pages/SensorPage';
 import WaterQualityPage from './pages/WaterQualityPage';
+import ObservationsPage from './pages/ObservationsPage';
 import AdminPage from './pages/AdminPage';
 import LogoutPage from './pages/LogoutPage';
 import PrivateRoute from './components/PrivateRoute';
@@ -19,6 +20,7 @@ function App() {
           <Route path="/weather" element={<PrivateRoute><WeatherPage /></PrivateRoute>} />
           <Route path="/sensors" element={<PrivateRoute><SensorPage /></PrivateRoute>} />
           <Route path="/water-quality" element={<PrivateRoute><WaterQualityPage /></PrivateRoute>} />
+          <Route path="/observations" element={<PrivateRoute><ObservationsPage /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
           <Route path="/logout" element={<LogoutPage />} />
         </Routes>
