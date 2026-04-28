@@ -1,13 +1,25 @@
 import React, { useState, useCallback, useEffect, memo } from 'react';
-import { Box } from '@mui/material';
+import {
+  Box,
+  Fab,
+  IconButton,
+  Tooltip,
+  useTheme,
+} from '@mui/material';
+import { Chat, KeyboardArrowDown } from '@mui/icons-material';
 import { ChatbotInterface, TeachModeInterface } from 'chatbot-interface-ifi';
 import { useUserStore } from '../../store/useUserStore';
 import { chatbotSessionService } from '../../firebase/chatbotSessionService';
 
 const CHATBOT_ID = import.meta.env.VITE_CHATBOT_ID?.trim();
 
+const minimizedStorageKey = (uid: string) => `npike-chatbot-minimized-${uid}`;
+
+const Z_HOST_CHROME = 1210;
+
 const AuthenticatedChatbot: React.FC = memo(() => {
   const user = useUserStore((s) => s.user);
+  const theme = useTheme();
 
   useEffect(() => {
     if (import.meta.env.DEV && !CHATBOT_ID) {
@@ -16,14 +28,40 @@ const AuthenticatedChatbot: React.FC = memo(() => {
       );
     }
   }, []);
+
   const [mode, setMode] = useState<'chat' | 'teach'>('chat');
   const [savedSessionIds, setSavedSessionIds] = useState<string[]>([]);
+  const [minimized, setMinimized] = useState(false);
+
+  const setMinimizedPersist = useCallback(
+    (value: boolean, uid: string) => {
+      setMinimized(value);
+      try {
+        localStorage.setItem(minimizedStorageKey(uid), String(value));
+      } catch {
+        // ignore quota / privacy mode
+      }
+    },
+    []
+  );
+
+  /** Per-account minimize preference + reset chat/teach mode when switching users */
+  useEffect(() => {
+    if (!user?.uid) return;
+    try {
+      setMinimized(localStorage.getItem(minimizedStorageKey(user.uid)) === 'true');
+    } catch {
+      setMinimized(false);
+    }
+    setMode('chat');
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.uid) return;
     let cancelled = false;
-    chatbotSessionService.getTeachSessionIds(user.uid).then((ids) => {
-      if (!cancelled && ids.length > 0) {
+    setSavedSessionIds([]);
+    void chatbotSessionService.getTeachSessionIds(user.uid).then((ids) => {
+      if (!cancelled) {
         setSavedSessionIds(ids);
       }
     });
@@ -54,54 +92,111 @@ const AuthenticatedChatbot: React.FC = memo(() => {
     [user?.uid]
   );
 
+  /** One fixed corner stack: slide off-screen when host-minimized OR fade when inactive mode */
+  const layerSx = useCallback(
+    (layer: 'chat' | 'teach') => {
+      const active = mode === layer;
+      const tDock = theme.transitions.create(['transform', 'opacity', 'visibility'], {
+        duration: theme.transitions.duration.short,
+        easing: theme.transitions.easing.easeInOut,
+      });
+      const tFade = theme.transitions.create('opacity', { duration: 300 });
+
+      return {
+        position: 'fixed' as const,
+        bottom: 0,
+        right: 0,
+        zIndex: active ? 1101 : 1099,
+        ...(minimized
+          ? {
+              opacity: 0,
+              visibility: 'hidden' as const,
+              pointerEvents: 'none' as const,
+              transform: 'translateY(105vh)',
+              transition: tDock,
+            }
+          : {
+              opacity: active ? 1 : 0,
+              pointerEvents: active ? ('auto' as const) : ('none' as const),
+              visibility: 'visible' as const,
+              transform: 'translateY(0)',
+              transition: tFade,
+            }),
+      };
+    },
+    [mode, minimized, theme]
+  );
+
   if (!CHATBOT_ID || !user) {
     return null;
   }
 
-  /* No full-screen pointer-events:none wrapper — it can block IFI header controls (e.g. close).
-     Inactive mode stays pointer-events:none and below active z-index so it never steals clicks. */
+  const uid = user.uid;
+
   return (
     <>
-      <Box
-        aria-live="polite"
-        aria-hidden={mode !== 'chat'}
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          zIndex: mode === 'chat' ? 1101 : 1099,
-          opacity: mode === 'chat' ? 1 : 0,
-          pointerEvents: mode === 'chat' ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease',
-        }}
-      >
+      {/* Host chrome — IFI-built-in close/minimize is unreliable */}
+      {!minimized && (
+        <Tooltip title="Hide AI Tutor (keeps your session)">
+          <IconButton
+            aria-label="Hide AI Tutor"
+            color="inherit"
+            onClick={() => setMinimizedPersist(true, uid)}
+            sx={{
+              position: 'fixed',
+              right: 16,
+              bottom: { xs: 96, sm: 88 },
+              zIndex: Z_HOST_CHROME,
+              bgcolor: 'background.paper',
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: 2,
+              '&:hover': { bgcolor: 'action.hover', boxShadow: 4 },
+            }}
+            size="large"
+          >
+            <KeyboardArrowDown />
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {minimized && (
+        <Tooltip title="Open AI Tutor">
+          <Fab
+            color="secondary"
+            aria-label="Open AI Tutor"
+            size="medium"
+            onClick={() => setMinimizedPersist(false, uid)}
+            sx={{
+              position: 'fixed',
+              right: 24,
+              bottom: 24,
+              zIndex: Z_HOST_CHROME,
+            }}
+          >
+            <Chat />
+          </Fab>
+        </Tooltip>
+      )}
+
+      {/* key=uid forces a new IFI instance per account — avoids showing the previous user's thread */}
+      <Box aria-live="polite" aria-hidden={mode !== 'chat'} sx={layerSx('chat')}>
         <ChatbotInterface
+          key={`ifi-chat-${uid}`}
           chatbotId={CHATBOT_ID}
           onConversationStart={handleConversationStart}
           enableGuidedQuestions
           onSwitchToLearn={() => setMode('teach')}
-          isActive={mode === 'chat'}
+          isActive={mode === 'chat' && !minimized}
         />
       </Box>
-      <Box
-        aria-live="polite"
-        aria-hidden={mode !== 'teach'}
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          zIndex: mode === 'teach' ? 1101 : 1099,
-          opacity: mode === 'teach' ? 1 : 0,
-          pointerEvents: mode === 'teach' ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease',
-        }}
-      >
+      <Box aria-live="polite" aria-hidden={mode !== 'teach'} sx={layerSx('teach')}>
         <TeachModeInterface
+          key={`ifi-teach-${uid}`}
           chatbotId={CHATBOT_ID}
           sessionIds={savedSessionIds}
           onSessionStart={handleSessionStart}
           onSwitchToChat={() => setMode('chat')}
-          isActive={mode === 'teach'}
+          isActive={mode === 'teach' && !minimized}
         />
       </Box>
     </>
