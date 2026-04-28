@@ -1,17 +1,23 @@
+import type { MouseEventHandler } from 'react';
 import { memo } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { Chat as ChatIcon } from '@mui/icons-material';
 
+export type PatMinimizedToggleProps = {
+  /** When set (host-rendered bar), opens the tutor shell. Omit for IFI `customToggleButton` (IFI injects click). */
+  onClick?: MouseEventHandler;
+};
+
 /**
- * Collapsed control for chatbot-interface-ifi. IFI clones this node and attaches the open handler.
- * Clicking the panel X returns to this view without unmounting (conversation state stays in IFI).
+ * Collapsed PAT control. Use with `onClick` when the host hides IFI; omit `onClick` if passed as IFI `customToggleButton`.
  */
-export const PatMinimizedToggle = memo(function PatMinimizedToggle() {
+export const PatMinimizedToggle = memo(function PatMinimizedToggle({ onClick }: PatMinimizedToggleProps) {
   return (
     <Paper
       component="div"
       role="button"
       elevation={4}
+      onClick={onClick}
       aria-label="Open Personalized Academic Tutor"
       sx={{
         display: 'flex',

@@ -1,11 +1,15 @@
 import React, { useState, useCallback, useEffect, memo } from 'react';
-import { Box, useTheme } from '@mui/material';
+import { Box, IconButton, Tooltip, useTheme } from '@mui/material';
+import { KeyboardArrowDown } from '@mui/icons-material';
 import { ChatbotInterface, TeachModeInterface } from 'chatbot-interface-ifi';
 import { useUserStore } from '../../store/useUserStore';
 import { chatbotSessionService } from '../../firebase/chatbotSessionService';
 import { PatMinimizedToggle } from './PatMinimizedToggle';
 
 const CHATBOT_ID = import.meta.env.VITE_CHATBOT_ID?.trim();
+
+const shellExpandedStorageKey = (uid: string) => `npike-pat-shell-expanded-${uid}`;
+const Z_MINIMIZE_CHROME = 1230;
 
 const AuthenticatedChatbot: React.FC = memo(() => {
   const user = useUserStore((s) => s.user);
@@ -21,11 +25,27 @@ const AuthenticatedChatbot: React.FC = memo(() => {
 
   const [mode, setMode] = useState<'chat' | 'teach'>('chat');
   const [savedSessionIds, setSavedSessionIds] = useState<string[]>([]);
+  const [shellExpanded, setShellExpanded] = useState(true);
 
-  /** Reset to chat when switching Firebase account */
+  const setShellExpandedPersist = useCallback((expanded: boolean, uidForStorage: string) => {
+    setShellExpanded(expanded);
+    try {
+      localStorage.setItem(shellExpandedStorageKey(uidForStorage), String(expanded));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  /** Reset mode + default expanded when switching Firebase account */
   useEffect(() => {
     if (!user?.uid) return;
     setMode('chat');
+    try {
+      const raw = localStorage.getItem(shellExpandedStorageKey(user.uid));
+      setShellExpanded(raw !== 'false');
+    } catch {
+      setShellExpanded(true);
+    }
   }, [user?.uid]);
 
   useEffect(() => {
@@ -65,12 +85,26 @@ const AuthenticatedChatbot: React.FC = memo(() => {
   );
 
   /**
-   * isActive = chat vs teach only. Do not tie to a host "minimized" flag: IFI uses isActive with its
-   * own open/close state; forcing false and sliding the panel off-screen hid the built-in FAB.
+   * IFI open/close + custom toggle is unreliable in our layout. Host `shellExpanded` hides the whole
+   * widget visually while keeping it mounted so conversations / teach state stay in memory + IFI localStorage.
    */
   const layerSx = useCallback(
     (layer: 'chat' | 'teach') => {
       const active = mode === layer;
+      const collapsed =
+        !shellExpanded &&
+        ({
+          opacity: 0,
+          pointerEvents: 'none' as const,
+          visibility: 'hidden' as const,
+          width: 1,
+          height: 1,
+          maxWidth: 1,
+          maxHeight: 1,
+          overflow: 'hidden' as const,
+          clipPath: 'inset(50%)',
+        } as const);
+
       return {
         position: 'fixed' as const,
         bottom: 0,
@@ -78,10 +112,12 @@ const AuthenticatedChatbot: React.FC = memo(() => {
         zIndex: active ? 1101 : 1099,
         opacity: active ? 1 : 0,
         pointerEvents: active ? ('auto' as const) : ('none' as const),
-        transition: theme.transitions.create('opacity', { duration: 300 }),
+        transition: theme.transitions.create(['opacity', 'visibility'], { duration: 300 }),
+        visibility: 'visible' as const,
+        ...(!shellExpanded ? collapsed : {}),
       };
     },
-    [mode, theme]
+    [mode, theme, shellExpanded]
   );
 
   if (!CHATBOT_ID || !user) {
@@ -92,12 +128,46 @@ const AuthenticatedChatbot: React.FC = memo(() => {
 
   return (
     <>
-      {/* key=uid forces a new IFI instance per account — avoids showing the previous user's thread */}
+      {!shellExpanded && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: Z_MINIMIZE_CHROME,
+          }}
+        >
+          <PatMinimizedToggle onClick={() => setShellExpandedPersist(true, uid)} />
+        </Box>
+      )}
+
+      {shellExpanded && (
+        <Tooltip title="Hide tutor (PAT) — your session is kept">
+          <IconButton
+            aria-label="Hide Personalized Academic Tutor"
+            color="inherit"
+            onClick={() => setShellExpandedPersist(false, uid)}
+            size="large"
+            sx={{
+              position: 'fixed',
+              right: 16,
+              bottom: { xs: 96, sm: 88 },
+              zIndex: Z_MINIMIZE_CHROME,
+              bgcolor: 'background.paper',
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: 2,
+              '&:hover': { bgcolor: 'action.hover', boxShadow: 4 },
+            }}
+          >
+            <KeyboardArrowDown />
+          </IconButton>
+        </Tooltip>
+      )}
+
       <Box aria-live="polite" aria-hidden={mode !== 'chat'} sx={layerSx('chat')}>
         <ChatbotInterface
           key={`ifi-chat-${uid}`}
           chatbotId={CHATBOT_ID}
-          customToggleButton={<PatMinimizedToggle />}
           onConversationStart={handleConversationStart}
           enableGuidedQuestions
           onSwitchToLearn={() => setMode('teach')}
@@ -108,7 +178,6 @@ const AuthenticatedChatbot: React.FC = memo(() => {
         <TeachModeInterface
           key={`ifi-teach-${uid}`}
           chatbotId={CHATBOT_ID}
-          customToggleButton={<PatMinimizedToggle />}
           sessionIds={savedSessionIds}
           onSessionStart={handleSessionStart}
           onSwitchToChat={() => setMode('chat')}

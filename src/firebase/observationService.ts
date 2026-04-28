@@ -239,9 +239,10 @@ export const observationService = {
         continue;
       }
 
-      const { time: _time, ...rest } = rec;
+      const payload = { ...rec };
+      delete (payload as { time?: string }).time;
       await addDoc(collection(db, OBSERVATIONS_COLLECTION), {
-        ...rest,
+        ...payload,
         enteredBy: userId,
         enteredAt: serverTimestamp() as Timestamp,
       });
