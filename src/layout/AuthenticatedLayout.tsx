@@ -5,6 +5,7 @@ import { useConfirmation } from '../hooks/useConfirmation';
 import ConfirmationDialog from '../features/ConfirmationDialog';
 import { NavigationBar } from '../components/navigation';
 import Footer from '../components/layout/Footer';
+import AuthenticatedChatbot from '../components/chatbot/AuthenticatedChatbot';
 import { useLogout } from '../utils/logout';
 import type { ReactNode } from 'react';
 
@@ -54,6 +55,8 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+
+      <AuthenticatedChatbot />
     </Box>
   );
 };

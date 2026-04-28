@@ -122,6 +122,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // === CHATBOT (IFI) — per-user teach-mode session IDs ===
+    match /userChatbotState/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // === DEFAULT DENY ===
     // Deny all other requests by default
     match /{document=**} {
