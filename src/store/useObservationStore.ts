@@ -158,7 +158,11 @@ export const useObservationStore = create<ObservationStore>()(
       toggleRowExpansion: (rowId) =>
         set(s => {
           const next = new Set(s.table.expandedRows);
-          next.has(rowId) ? next.delete(rowId) : next.add(rowId);
+          if (next.has(rowId)) {
+            next.delete(rowId);
+          } else {
+            next.add(rowId);
+          }
           return { table: { ...s.table, expandedRows: next } };
         }),
 
