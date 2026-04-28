@@ -1,6 +1,5 @@
-import React, { useState, useCallback, useEffect, memo } from 'react';
-import { Box, IconButton, Tooltip, useTheme } from '@mui/material';
-import { KeyboardArrowDown } from '@mui/icons-material';
+import React, { useState, useCallback, useEffect, useRef, memo } from 'react';
+import { Box, useTheme } from '@mui/material';
 import { ChatbotInterface, TeachModeInterface } from 'chatbot-interface-ifi';
 import { useUserStore } from '../../store/useUserStore';
 import { chatbotSessionService } from '../../firebase/chatbotSessionService';
@@ -10,6 +9,17 @@ const CHATBOT_ID = import.meta.env.VITE_CHATBOT_ID?.trim();
 
 const shellExpandedStorageKey = (uid: string) => `npike-pat-shell-expanded-${uid}`;
 const Z_MINIMIZE_CHROME = 1230;
+
+/** MUI `CloseRounded` path (IFI header close uses this icon). */
+const MUI_CLOSE_ROUNDED_D_PREFIX = 'M18.3 5.71';
+
+function isIfiHeaderCloseButton(target: EventTarget | null, shellRoot: HTMLElement | null): boolean {
+  if (!shellRoot || !(target instanceof Node) || !shellRoot.contains(target)) return false;
+  const btn = (target as HTMLElement).closest?.('button');
+  if (!btn || !shellRoot.contains(btn)) return false;
+  const d = btn.querySelector('svg path')?.getAttribute('d');
+  return Boolean(d?.startsWith(MUI_CLOSE_ROUNDED_D_PREFIX));
+}
 
 const AuthenticatedChatbot: React.FC = memo(() => {
   const user = useUserStore((s) => s.user);
@@ -25,7 +35,8 @@ const AuthenticatedChatbot: React.FC = memo(() => {
 
   const [mode, setMode] = useState<'chat' | 'teach'>('chat');
   const [savedSessionIds, setSavedSessionIds] = useState<string[]>([]);
-  const [shellExpanded, setShellExpanded] = useState(true);
+  const [shellExpanded, setShellExpanded] = useState(false);
+  const shellRootRef = useRef<HTMLDivElement | null>(null);
 
   const setShellExpandedPersist = useCallback((expanded: boolean, uidForStorage: string) => {
     setShellExpanded(expanded);
@@ -36,17 +47,34 @@ const AuthenticatedChatbot: React.FC = memo(() => {
     }
   }, []);
 
-  /** Reset mode + default expanded when switching Firebase account */
+  /** Reset mode; shell starts minimized unless user previously left it open for this uid */
   useEffect(() => {
     if (!user?.uid) return;
     setMode('chat');
     try {
       const raw = localStorage.getItem(shellExpandedStorageKey(user.uid));
-      setShellExpanded(raw !== 'false');
+      setShellExpanded(raw === 'true');
     } catch {
-      setShellExpanded(true);
+      setShellExpanded(false);
     }
   }, [user?.uid]);
+
+  /**
+   * IFI does not expose onClose. Intercept the header close control (MUI CloseRounded) in capture
+   * phase so IFI never enters its internal “FAB” state — host shell goes straight to the PAT button.
+   */
+  useEffect(() => {
+    if (!shellExpanded || !user?.uid) return;
+    const uid = user.uid;
+    const onPointerDownCapture = (e: PointerEvent) => {
+      if (!isIfiHeaderCloseButton(e.target, shellRootRef.current)) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setShellExpandedPersist(false, uid);
+    };
+    window.addEventListener('pointerdown', onPointerDownCapture, true);
+    return () => window.removeEventListener('pointerdown', onPointerDownCapture, true);
+  }, [shellExpanded, user?.uid, setShellExpandedPersist]);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -141,48 +169,35 @@ const AuthenticatedChatbot: React.FC = memo(() => {
         </Box>
       )}
 
-      {shellExpanded && (
-        <Tooltip title="Hide tutor (PAT) — your session is kept">
-          <IconButton
-            aria-label="Hide Personalized Academic Tutor"
-            color="inherit"
-            onClick={() => setShellExpandedPersist(false, uid)}
-            size="large"
-            sx={{
-              position: 'fixed',
-              right: 16,
-              bottom: { xs: 96, sm: 88 },
-              zIndex: Z_MINIMIZE_CHROME,
-              bgcolor: 'background.paper',
-              border: `1px solid ${theme.palette.divider}`,
-              boxShadow: 2,
-              '&:hover': { bgcolor: 'action.hover', boxShadow: 4 },
-            }}
-          >
-            <KeyboardArrowDown />
-          </IconButton>
-        </Tooltip>
-      )}
-
-      <Box aria-live="polite" aria-hidden={mode !== 'chat'} sx={layerSx('chat')}>
-        <ChatbotInterface
-          key={`ifi-chat-${uid}`}
-          chatbotId={CHATBOT_ID}
-          onConversationStart={handleConversationStart}
-          enableGuidedQuestions
-          onSwitchToLearn={() => setMode('teach')}
-          isActive={mode === 'chat'}
-        />
-      </Box>
-      <Box aria-live="polite" aria-hidden={mode !== 'teach'} sx={layerSx('teach')}>
-        <TeachModeInterface
-          key={`ifi-teach-${uid}`}
-          chatbotId={CHATBOT_ID}
-          sessionIds={savedSessionIds}
-          onSessionStart={handleSessionStart}
-          onSwitchToChat={() => setMode('chat')}
-          isActive={mode === 'teach'}
-        />
+      <Box
+        ref={shellRootRef}
+        sx={{
+          position: 'fixed',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 1090,
+        }}
+      >
+        <Box aria-live="polite" aria-hidden={mode !== 'chat'} sx={layerSx('chat')}>
+          <ChatbotInterface
+            key={`ifi-chat-${uid}`}
+            chatbotId={CHATBOT_ID}
+            onConversationStart={handleConversationStart}
+            enableGuidedQuestions
+            onSwitchToLearn={() => setMode('teach')}
+            isActive={mode === 'chat'}
+          />
+        </Box>
+        <Box aria-live="polite" aria-hidden={mode !== 'teach'} sx={layerSx('teach')}>
+          <TeachModeInterface
+            key={`ifi-teach-${uid}`}
+            chatbotId={CHATBOT_ID}
+            sessionIds={savedSessionIds}
+            onSessionStart={handleSessionStart}
+            onSwitchToChat={() => setMode('chat')}
+            isActive={mode === 'teach'}
+          />
+        </Box>
       </Box>
     </>
   );
