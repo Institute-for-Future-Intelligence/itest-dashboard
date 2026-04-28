@@ -3,6 +3,7 @@ import { Box, useTheme } from '@mui/material';
 import { ChatbotInterface, TeachModeInterface } from 'chatbot-interface-ifi';
 import { useUserStore } from '../../store/useUserStore';
 import { chatbotSessionService } from '../../firebase/chatbotSessionService';
+import { PatMinimizedToggle } from './PatMinimizedToggle';
 
 const CHATBOT_ID = import.meta.env.VITE_CHATBOT_ID?.trim();
 
@@ -96,6 +97,7 @@ const AuthenticatedChatbot: React.FC = memo(() => {
         <ChatbotInterface
           key={`ifi-chat-${uid}`}
           chatbotId={CHATBOT_ID}
+          customToggleButton={<PatMinimizedToggle />}
           onConversationStart={handleConversationStart}
           enableGuidedQuestions
           onSwitchToLearn={() => setMode('teach')}
@@ -106,6 +108,7 @@ const AuthenticatedChatbot: React.FC = memo(() => {
         <TeachModeInterface
           key={`ifi-teach-${uid}`}
           chatbotId={CHATBOT_ID}
+          customToggleButton={<PatMinimizedToggle />}
           sessionIds={savedSessionIds}
           onSessionStart={handleSessionStart}
           onSwitchToChat={() => setMode('chat')}
