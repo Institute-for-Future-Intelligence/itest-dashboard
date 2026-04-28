@@ -68,6 +68,8 @@ When the chatbot is enabled, each user’s doc at `userChatbotState/{uid}` may i
 npm run dev
 ```
 
+Then open **http://localhost:5173/itest-dashboard/** (the `/itest-dashboard/` base path is required; it matches `vite.config` `base` and React Router). To see the chatbot locally, add `VITE_CHATBOT_ID` to `.env` like in the block above—without it the widget only appears in CI builds that inject the secret.
+
 ---
 
 ### 📌 Notes
