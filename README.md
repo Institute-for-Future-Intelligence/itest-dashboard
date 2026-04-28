@@ -56,6 +56,8 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 VITE_CHATBOT_ID=your-chatbot-id-from-ifi-dashboard
 ```
 
+When the chatbot is enabled, each user’s doc at `userChatbotState/{uid}` may include teach-session IDs, `lastConversationId`, and a capped `conversationIds` list (chat metadata only; message text stays with IFI).
+
 > Replace the `...` with your actual Firebase config values.
 
 ---

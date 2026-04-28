@@ -47,6 +47,15 @@ const AuthenticatedChatbot: React.FC = memo(() => {
     [user?.uid]
   );
 
+  const handleConversationStart = useCallback(
+    (conversationId: string) => {
+      if (user?.uid) {
+        void chatbotSessionService.recordConversationStart(user.uid, conversationId);
+      }
+    },
+    [user?.uid]
+  );
+
   if (!CHATBOT_ID || !user) {
     return null;
   }
@@ -57,6 +66,7 @@ const AuthenticatedChatbot: React.FC = memo(() => {
         <Box sx={panelStyle(mode === 'chat')}>
           <ChatbotInterface
             chatbotId={CHATBOT_ID}
+            onConversationStart={handleConversationStart}
             enableGuidedQuestions
             onSwitchToLearn={() => setMode('teach')}
             isActive={mode === 'chat'}

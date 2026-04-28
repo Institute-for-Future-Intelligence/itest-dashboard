@@ -303,8 +303,7 @@
           "order": "DESCENDING"
         }
       ]
-    }
-  ],
+    },
     {
       "collectionGroup": "seaweedObservations",
       "queryScope": "COLLECTION",
