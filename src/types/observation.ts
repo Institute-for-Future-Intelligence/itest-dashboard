@@ -118,6 +118,9 @@ export const SEAWEED_SPECIES: { value: string; label: string; labelHawaiian?: st
 
 export const OBSERVATION_LOCATIONS: { value: string; label: string }[] = [
   { value: 'fh_107_growth_chamber', label: 'FH-107 Growth Chamber' },
+  { value: 'fhw205_large_growth_chamber', label: 'Large Growth Chamber (fhw205, Castle HS)' },
+  { value: 'fhw109_small_growth_chamber', label: 'Small Growth Chamber (fhw109, Castle HS)' },
+  { value: 'castle_outdoor_tumble_tank', label: 'Outdoor Tumble Tank (Castle HS)' },
   { value: '2gal_bucket',           label: '2-Gallon Bucket' },
   { value: '40gal_tub',             label: '40-Gallon Tub' },
   { value: 'main_500gal_tank',      label: 'Main 500-Gallon Tank' },

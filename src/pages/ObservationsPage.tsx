@@ -99,7 +99,7 @@ const ObservationsPage: React.FC = () => {
           </Typography>
         </Box>
         {isAdmin && (
-          <Tooltip title="Import the 6 historical records from Ken Kozuma's Feb–Mar 2026 emails. Duplicate entries are skipped automatically.">
+          <Tooltip title="Import Ken Kozuma’s seeded records (FH-107 Feb–Mar 2026 and Castle HS May 2026). Skips rows already in the database.">
             <span>
               <Button
                 variant="outlined"

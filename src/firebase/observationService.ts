@@ -152,14 +152,18 @@ export const observationService = {
   },
 
   /**
-   * Seed the 6 historical records extracted from Ken Kozuma's emails (Nov 2025 – Mar 2026).
-   * Safe to call multiple times — checks for existing records by date+species first.
+   * Seed historical records from Ken Kozuma (FH-107 Feb–Mar 2026; Castle HS May 2026 baseline + Day 2).
+   * Safe to call multiple times — skips rows that match an existing observation on date, species,
+   * observer, location, and timestamp.
    */
   async seedHistoricalData(userId: string): Promise<{ inserted: number; skipped: number }> {
     const OBSERVER = 'Ken Kozuma';
     const LOCATION = 'fh_107_growth_chamber';
 
     type SeedRecord = Omit<SeaweedObservation, 'id' | 'enteredAt' | 'enteredBy'> & { time: string };
+
+    const seedDedupeKey = (r: SeedRecord | SeaweedObservation) =>
+      `${r.date}|${r.species}|${r.observer}|${r.location}|${r.timestamp.getTime()}`;
 
     const records: SeedRecord[] = [
       {
@@ -223,17 +227,135 @@ export const observationService = {
         healthNotes: 'Growing slower than ogo (expected). Seems healthier, color looks good.',
         dataReliability: 'reliable',
       },
+
+      // ── Castle HS — May 6, 2026 (Initial / baseline) ─────────────────────────
+      // Green sample → ogo_manuea; red sample → lepe_lepe (per educator narrative).
+      {
+        date: '2026-05-06', time: '09:00',
+        timestamp: new Date('2026-05-06T09:00:00'),
+        species: 'ogo_manuea', location: 'fhw205_large_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 14.9, salinity: 24.4,
+        lightWhitePercent: 3, lightBluePercent: 3, lightRedPercent: 3,
+        colorDescription: 'Green biomass sample (paired with red lepe lepe sample).',
+        generalNotes:
+          'Castle HS — Initial (5/6). Large growth chamber fhw205. Lights 3% white, 3% blue, 3% red to mimic outdoor setup. '
+          + 'Lepe lepe under light began turning green; batch kept dark stayed reddish but not the deep red expected. '
+          + 'Nitrite/nitrate baseline not yet measured.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-06', time: '09:01',
+        timestamp: new Date('2026-05-06T09:01:00'),
+        species: 'lepe_lepe', location: 'fhw205_large_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 5.2, salinity: 24.4,
+        colorDescription: 'Red biomass sample (paired green/red samples similar size per session).',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-06', time: '09:02',
+        timestamp: new Date('2026-05-06T09:02:00'),
+        species: 'ogo_manuea', location: 'fhw109_small_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 15.6, salinity: 24.4,
+        lightWhitePercent: 3, lightBluePercent: 5, lightRedPercent: 1,
+        colorDescription: 'Green biomass sample.',
+        generalNotes: 'Castle HS — Initial (5/6). Small growth chamber fhw109. Lights 3% white, 5% blue, 1% red.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-06', time: '09:03',
+        timestamp: new Date('2026-05-06T09:03:00'),
+        species: 'lepe_lepe', location: 'fhw109_small_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 5.0, salinity: 24.4,
+        colorDescription: 'Red biomass sample.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-06', time: '09:04',
+        timestamp: new Date('2026-05-06T09:04:00'),
+        species: 'ogo_manuea', location: 'castle_outdoor_tumble_tank', observer: OBSERVER,
+        wetMassGrams: 14.8, salinity: 22.1,
+        colorDescription: 'Green biomass sample — outdoor tumble tank.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-06', time: '09:05',
+        timestamp: new Date('2026-05-06T09:05:00'),
+        species: 'lepe_lepe', location: 'castle_outdoor_tumble_tank', observer: OBSERVER,
+        wetMassGrams: 4.2, salinity: 22.1,
+        colorDescription: 'Red biomass sample — outdoor tumble tank.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-06', time: '10:00',
+        timestamp: new Date('2026-05-06T10:00:00'),
+        species: 'other', location: 'main_500gal_tank', observer: OBSERVER,
+        wetMassGrams: 234.8,
+        generalNotes:
+          'Castle HS main large system: total mixed limu collected — mostly green with some red lepe lepe (baseline weigh-in for the experiment).',
+        dataReliability: 'reliable',
+      },
+
+      // ── Castle HS — May 8, 2026 (Day 2) ───────────────────────────────────────
+      {
+        date: '2026-05-08', time: '09:00',
+        timestamp: new Date('2026-05-08T09:00:00'),
+        species: 'ogo_manuea', location: 'fhw205_large_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 15.2, salinity: 28.1,
+        generalNotes:
+          'Day 2 (5/8). Salt crystals visible; heavy evaporation suspected — salinity rose sharply. Plan to add water to stabilize salinity.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-08', time: '09:01',
+        timestamp: new Date('2026-05-08T09:01:00'),
+        species: 'lepe_lepe', location: 'fhw205_large_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 5.5, salinity: 28.1,
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-08', time: '09:02',
+        timestamp: new Date('2026-05-08T09:02:00'),
+        species: 'ogo_manuea', location: 'fhw109_small_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 17.2, salinity: 24.4,
+        generalNotes: 'Day 2 (5/8). Small chamber stable — water and salinity steady; strong growth vs initial.',
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-08', time: '09:03',
+        timestamp: new Date('2026-05-08T09:03:00'),
+        species: 'lepe_lepe', location: 'fhw109_small_growth_chamber', observer: OBSERVER,
+        wetMassGrams: 5.9, salinity: 24.4,
+        dataReliability: 'reliable',
+      },
+      {
+        date: '2026-05-08', time: '09:04',
+        timestamp: new Date('2026-05-08T09:04:00'),
+        species: 'ogo_manuea', location: 'castle_outdoor_tumble_tank', observer: OBSERVER,
+        wetMassGrams: 15.0, salinity: 20.6,
+        generalNotes:
+          'Day 2 (5/8). Goats damaged drain pipe — major water loss; refilled with water and salt (salinity dropped). '
+          + 'Circulation off for less than a day.',
+        dataReliability: 'uncertain',
+      },
+      {
+        date: '2026-05-08', time: '09:05',
+        timestamp: new Date('2026-05-08T09:05:00'),
+        species: 'lepe_lepe', location: 'castle_outdoor_tumble_tank', observer: OBSERVER,
+        wetMassGrams: 3.7, salinity: 20.6,
+        healthNotes: 'Red mass down — possible fragment broke off and was flushed during drainage/refill.',
+        dataReliability: 'uncertain',
+      },
     ];
 
     // Fetch existing records to avoid duplicates
     const existing = await this.getObservations({ sortBy: 'date', sortOrder: 'asc', limit: 500 });
-    const existingKeys = new Set(existing.map(o => `${o.date}|${o.species}|${o.observer}`));
+    const existingKeys = new Set(existing.map(o => seedDedupeKey(o)));
 
     let inserted = 0;
     let skipped  = 0;
 
     for (const rec of records) {
-      const key = `${rec.date}|${rec.species}|${rec.observer}`;
+      const key = seedDedupeKey(rec);
       if (existingKeys.has(key)) {
         skipped++;
         continue;
