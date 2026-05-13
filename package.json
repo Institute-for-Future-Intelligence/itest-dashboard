@@ -15,7 +15,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "template:observations": "node scripts/build-observation-import-template.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

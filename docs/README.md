@@ -22,6 +22,8 @@ This folder contains all project documentation for the Nā Puna ʻIke Dashboard.
 
 **I'm setting up the repository** → Follow [Repository Setup Guide](04-REPOSITORY-SETUP.md)
 
+**I'm an educator adding limu data** → Use the Excel template in [templates/seaweed-observations-import-template.xlsx](templates/seaweed-observations-import-template.xlsx) (fill the `Observations` sheet; see `How_to_use` and `Allowed_codes` inside the workbook). Regenerate from source after changing species/location lists: `npm run template:observations`.
+
 ## 📝 Keeping Documentation Updated
 
 When you make changes to the codebase:
