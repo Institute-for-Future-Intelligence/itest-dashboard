@@ -13,7 +13,7 @@ import {
   CircularProgress,
   Tooltip,
 } from '@mui/material';
-import { Add, ViewList, BarChart, FileDownload } from '@mui/icons-material';
+import { Add, ViewList, BarChart, FileDownload, Download } from '@mui/icons-material';
 import { useUserStore } from '../store/useUserStore';
 import { useObservationStore } from '../store/useObservationStore';
 import { observationService } from '../firebase/observationService';
@@ -98,22 +98,37 @@ const ObservationsPage: React.FC = () => {
             across cultivation sessions. Data is recorded manually by educators and students.
           </Typography>
         </Box>
-        {isAdmin && (
-          <Tooltip title="Import Ken Kozuma’s seeded records (FH-107 Feb–Mar 2026 and Castle HS May 2026). Skips rows already in the database.">
-            <span>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={importing ? <CircularProgress size={16} /> : <FileDownload />}
-                onClick={handleImport}
-                disabled={importing}
-                sx={{ whiteSpace: 'nowrap' }}
-              >
-                {importing ? 'Importing…' : 'Import Historical Data'}
-              </Button>
-            </span>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <Tooltip title="Workbook for educators: one row per sample (e.g. green + red on the same day = two rows). Use codes from the Allowed_codes sheet. File upload coming later — for now fill and email or enter in the form.">
+            <Button
+              variant="outlined"
+              size="small"
+              component="a"
+              href={`${import.meta.env.BASE_URL}templates/seaweed-observations-import-template.xlsx`}
+              download="seaweed-observations-import-template.xlsx"
+              startIcon={<Download />}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Excel template
+            </Button>
           </Tooltip>
-        )}
+          {isAdmin && (
+            <Tooltip title="Import Ken Kozuma’s seeded records (FH-107 Feb–Mar 2026 and Castle HS May 2026). Skips rows already in the database.">
+              <span>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={importing ? <CircularProgress size={16} /> : <FileDownload />}
+                  onClick={handleImport}
+                  disabled={importing}
+                  sx={{ whiteSpace: 'nowrap' }}
+                >
+                  {importing ? 'Importing…' : 'Import Historical Data'}
+                </Button>
+              </span>
+            </Tooltip>
+          )}
+        </Box>
       </Box>
 
       {importResult && (

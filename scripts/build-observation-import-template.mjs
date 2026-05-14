@@ -1,9 +1,9 @@
 /**
- * Generates docs/templates/seaweed-observations-import-template.xlsx
- * for educators to fill in (July PD, etc.). Re-run after updating
- * species/location lists in src/types/observation.ts — keep *_LIST in sync.
+ * Generates public/templates/seaweed-observations-import-template.xlsx
+ * for educators to fill in (July PD, etc.). Shipped with the GitHub Pages build.
+ * Re-run after updating species/location lists in src/types/observation.ts — keep *_LIST in sync.
  *
- *   node scripts/build-observation-import-template.mjs
+ *   npm run template:observations
  */
 
 import * as fs from 'node:fs';
@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import XLSX from 'xlsx';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outDir = path.join(__dirname, '../docs/templates');
+const outDir = path.join(__dirname, '../public/templates');
 const outFile = path.join(outDir, 'seaweed-observations-import-template.xlsx');
 
 /** @type {readonly [string, string][]} value, label — sync with SEAWEED_SPECIES */
@@ -277,5 +277,4 @@ XLSX.utils.book_append_sheet(wb, sheetObservations(), 'Observations');
 XLSX.utils.book_append_sheet(wb, sheetAllowedCodes(), 'Allowed_codes');
 XLSX.utils.book_append_sheet(wb, sheetColumnReference(), 'Column_reference');
 XLSX.writeFile(wb, outFile);
-// eslint-disable-next-line no-console
 console.log('Wrote', outFile);
