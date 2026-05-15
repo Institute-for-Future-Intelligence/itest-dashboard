@@ -42,34 +42,48 @@ const RELIABILITY = ['reliable', 'uncertain', 'flagged'];
 const TEMP_UNITS = ['F', 'C'];
 const VOLUME_UNITS = ['gallons', 'liters'];
 
-const OBS_HEADERS = [
-  'date',
-  'time',
-  'observer',
-  'location',
-  'species',
-  'wet_mass_grams',
-  'salinity_ppt',
-  'temperature',
-  'temperature_unit',
-  'ph',
-  'dissolved_oxygen_mg_l',
-  'container_volume',
-  'container_volume_unit',
-  'light_schedule_start',
-  'light_schedule_end',
-  'light_white_percent',
-  'light_red_percent',
-  'light_blue_percent',
-  'water_exchange_percent',
-  'water_exchange_source',
-  'nutrients_added',
-  'color_description',
-  'health_notes',
-  'general_notes',
-  'sensor_issues',
-  'data_reliability',
+/**
+ * Row 1 = what educators see; row 2 = field keys (keep for future upload — copy/paste or hide row 2 in Excel if you prefer).
+ * Order matches Firestore / observation form.
+ */
+const OBS_COLUMNS = [
+  { key: 'date', title: 'Date (YYYY-MM-DD)' },
+  { key: 'time', title: 'Time (24-hour HH:MM)' },
+  { key: 'observer', title: 'Observer (your name)' },
+  { key: 'location', title: 'Location code' },
+  { key: 'species', title: 'Species code' },
+  { key: 'wet_mass_grams', title: 'Wet mass (grams)' },
+  { key: 'salinity_ppt', title: 'Salinity (ppt)' },
+  { key: 'temperature', title: 'Temperature (number)' },
+  { key: 'temperature_unit', title: 'Temperature unit (F or C)' },
+  { key: 'ph', title: 'pH' },
+  { key: 'dissolved_oxygen_mg_l', title: 'Dissolved oxygen (mg/L)' },
+  { key: 'container_volume', title: 'Container volume (number)' },
+  { key: 'container_volume_unit', title: 'Volume unit (gallons or liters)' },
+  { key: 'light_schedule_start', title: 'Lights on (HH:MM)' },
+  { key: 'light_schedule_end', title: 'Lights off (HH:MM)' },
+  { key: 'light_white_percent', title: 'Light — white % (0–100)' },
+  { key: 'light_red_percent', title: 'Light — red % (0–100)' },
+  { key: 'light_blue_percent', title: 'Light — blue % (0–100)' },
+  { key: 'water_exchange_percent', title: 'Water exchange % (0–100)' },
+  { key: 'water_exchange_source', title: 'Water exchange source (text)' },
+  { key: 'nutrients_added', title: 'Nutrients added (text)' },
+  { key: 'color_description', title: 'Color / appearance (text)' },
+  { key: 'health_notes', title: 'Health notes (text)' },
+  { key: 'general_notes', title: 'Session / setup notes (text)' },
+  { key: 'sensor_issues', title: 'Sensor issues? (TRUE or FALSE)' },
+  { key: 'data_reliability', title: 'Reliability (reliable / uncertain / flagged)' },
 ];
+
+const OBS_HEADERS = OBS_COLUMNS.map((c) => c.key);
+const OBS_TITLE_ROW = OBS_COLUMNS.map((c) => c.title);
+
+/** Label row directly under keys — helps orient users in a wide sheet */
+function exampleBannerRow() {
+  const row = Array(OBS_COLUMNS.length).fill('');
+  row[0] = '▼ Example rows only — delete before sending your file ▼';
+  return row;
+}
 
 /** Example rows: same pattern as Castle HS emails (one row per sample or total). */
 const EXAMPLE_ROWS = [
@@ -160,11 +174,16 @@ const EXAMPLE_ROWS = [
 ];
 
 function sheetObservations() {
-  const aoa = [OBS_HEADERS, ...EXAMPLE_ROWS];
+  const n = OBS_COLUMNS.length;
+  const lastCol = XLSX.utils.encode_col(n - 1);
+  const blankDataRows = Array.from({ length: 14 }, () => Array(n).fill(''));
+  const aoa = [OBS_TITLE_ROW, OBS_HEADERS, exampleBannerRow(), ...EXAMPLE_ROWS, ...blankDataRows];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = OBS_HEADERS.map((h) => ({
-    wch: Math.max(h.length, 12),
+  const lastRow = aoa.length;
+  ws['!cols'] = OBS_COLUMNS.map((c) => ({
+    wch: Math.min(Math.max(c.title.length, c.key.length, 12) + 2, 44),
   }));
+  ws['!autofilter'] = { ref: `A1:${lastCol}${lastRow}` };
   return ws;
 }
 
@@ -195,37 +214,36 @@ function sheetHowToUse() {
   const lines = [
     ['Seaweed observations — Excel template for Nā Puna ʻIke dashboard'],
     [''],
-    ['WHO: Fill one sheet ("Observations") and email the file back (or upload when the team enables file import).'],
+    ['OBSERVATIONS SHEET LAYOUT'],
+    [''],
+    ['Row 1 — Column titles: use these to know what goes in each column.'],
+    ['Row 2 — Technical field names: keep this row for automated import later; you can hide row 2 in Excel (Format → Hide) if it distracts you.'],
+    ['Row 3 — Reminder banner; then sample rows you should delete.'],
+    ['Empty rows below are for your data — add more rows in Excel as needed.'],
+    [''],
+    ['WHO: Fill "Observations" and email the file back (or upload when the team enables file import).'],
     [''],
     ['ONE ROW = ONE observation in the database.'],
-    ['  • If you weigh a "green" sample and a "red" sample the same day, use TWO rows (same date/time/location, different species and wet_mass_grams).'],
-    ['  • If you record only combined total limu mass for a whole system, use one row with species = other (see examples).'],
+    ['  • Green + red sample same day → TWO rows (same date, time, location; different species codes and wet masses).'],
+    ['  • Whole-system total mass only → one row, species code "other" (see Allowed_codes + examples).'],
+    ['  • Always copy location & species codes from "Allowed_codes".'],
     [''],
-    ['REQUIRED COLUMNS'],
-    ['  date — Use YYYY-MM-DD (e.g. 2026-05-12).'],
-    ['  time — 24-hour HH:MM (e.g. 09:00). If unknown, use 09:00.'],
-    ['  observer — Your name as you want it stored.'],
-    ['  location — Copy the short code from sheet "Allowed_codes" (e.g. fhw205_large_growth_chamber).'],
-    ['  species — Copy code from "Allowed_codes". Green chamber sample → often ogo_manuea; red sample → often lepe_lepe; system total → other.'],
+    ['REQUIRED FOR EACH ROW'],
+    ['  Date (row 1 title "Date…") — YYYY-MM-DD. Time — 24-hour HH:MM. Observer — your name.'],
+    ['  Location code — e.g. fhw205_large_growth_chamber. Species code — e.g. ogo_manuea or lepe_lepe.'],
     [''],
-    ['CORE MEASUREMENTS (use what you have; leave cells blank if not measured)'],
-    ['  wet_mass_grams — Wet biomass in grams.'],
-    ['  salinity_ppt — Salinity in ppt at the same session as the weigh-in, if you measured it.'],
+    ['CORE MEASUREMENTS (leave blank if not measured)'],
+    ['  Wet mass (g), Salinity (ppt), and any optional water-quality / lighting columns.'],
     [''],
     ['OPTIONAL — water quality / system'],
-    ['  temperature + temperature_unit (F or C), ph, dissolved_oxygen_mg_l'],
-    ['  container_volume + container_volume_unit (gallons or liters)'],
-    ['  Lighting: light_schedule_start/end (HH:MM), light_white_percent, light_red_percent, light_blue_percent (0–100).'],
-    ['  Interventions: water_exchange_percent, water_exchange_source, nutrients_added'],
+    ['  Temperature + unit (F or C), pH, dissolved O₂, container volume + unit, lighting %, water exchange, nutrients.'],
     [''],
     ['NOTES'],
-    ['  color_description, health_notes, general_notes — free text.'],
-    ['  sensor_issues — TRUE or FALSE (equipment acting oddly).'],
-    ['  data_reliability — reliable | uncertain | flagged (see Allowed_codes).'],
+    ['  Color, health, and session notes — free text. Sensor issues — TRUE or FALSE. Reliability — see Allowed_codes.'],
     [''],
-    ['TIP: Ken often sends Initial / Day 2 / Day 6 tables — each date gets new rows; same session can share time and salinity on both species rows.'],
+    ['TIP: Green + red sample same day = two rows (same date/time/location; different species and mass).'],
     [''],
-    ['After entering data, DELETE the three example rows in "Observations" before sending the file.'],
+    ['After entering data, delete the example rows. Keep row 1 + row 2 headers.'],
     [''],
     ['Version: generated from repo scripts. Lists match src/types/observation.ts.'],
   ];
@@ -235,38 +253,38 @@ function sheetHowToUse() {
 }
 
 function sheetColumnReference() {
-  const rows = [['column_name', 'meaning', 'example']];
+  const rows = [['Excel column title (row 1)', 'Field key (row 2)', 'Example']];
   const defs = [
-    ['date', 'Collection date', '2026-05-12'],
-    ['time', 'Time of reading (24h)', '09:00'],
-    ['observer', 'Person recording', 'Ken Kozuma'],
-    ['location', 'Site code from Allowed_codes', 'castle_outdoor_tumble_tank'],
-    ['species', 'Taxon or "other" for totals', 'ogo_manuea'],
-    ['wet_mass_grams', 'Wet mass (g)', '15.6'],
-    ['salinity_ppt', 'Salinity (ppt)', '27.5'],
-    ['temperature', 'Number only', '71.6'],
-    ['temperature_unit', 'F or C', 'F'],
-    ['ph', 'pH reading', '8.2'],
-    ['dissolved_oxygen_mg_l', 'DO mg/L', '8.1'],
-    ['container_volume', 'Number only', '2'],
-    ['container_volume_unit', 'gallons or liters', 'gallons'],
-    ['light_schedule_start', 'Lights on HH:MM', '08:00'],
-    ['light_schedule_end', 'Lights off HH:MM', '18:00'],
-    ['light_white_percent', '0–100', '3'],
-    ['light_red_percent', '0–100', '3'],
-    ['light_blue_percent', '0–100', '3'],
-    ['water_exchange_percent', '0–100', '25'],
-    ['water_exchange_source', 'Text', 'main aquaponic system'],
-    ['nutrients_added', 'Text', ''],
-    ['color_description', 'Text', 'Outdoor full color'],
-    ['health_notes', 'Text', ''],
-    ['general_notes', 'Text', 'Day 6 follow-up…'],
-    ['sensor_issues', 'TRUE or FALSE', 'FALSE'],
-    ['data_reliability', 'reliable / uncertain / flagged', 'reliable'],
+    ['Date (YYYY-MM-DD)', 'date', '2026-05-12'],
+    ['Time (24-hour HH:MM)', 'time', '09:00'],
+    ['Observer (your name)', 'observer', 'Ken Kozuma'],
+    ['Location code', 'location', 'castle_outdoor_tumble_tank'],
+    ['Species code', 'species', 'ogo_manuea'],
+    ['Wet mass (grams)', 'wet_mass_grams', '15.6'],
+    ['Salinity (ppt)', 'salinity_ppt', '27.5'],
+    ['Temperature (number)', 'temperature', '71.6'],
+    ['Temperature unit (F or C)', 'temperature_unit', 'F'],
+    ['pH', 'ph', '8.2'],
+    ['Dissolved oxygen (mg/L)', 'dissolved_oxygen_mg_l', '8.1'],
+    ['Container volume (number)', 'container_volume', '2'],
+    ['Volume unit (gallons or liters)', 'container_volume_unit', 'gallons'],
+    ['Lights on (HH:MM)', 'light_schedule_start', '08:00'],
+    ['Lights off (HH:MM)', 'light_schedule_end', '18:00'],
+    ['Light — white % (0–100)', 'light_white_percent', '3'],
+    ['Light — red % (0–100)', 'light_red_percent', '3'],
+    ['Light — blue % (0–100)', 'light_blue_percent', '3'],
+    ['Water exchange % (0–100)', 'water_exchange_percent', '25'],
+    ['Water exchange source (text)', 'water_exchange_source', 'main aquaponic system'],
+    ['Nutrients added (text)', 'nutrients_added', ''],
+    ['Color / appearance (text)', 'color_description', 'Outdoor full color'],
+    ['Health notes (text)', 'health_notes', ''],
+    ['Session / setup notes (text)', 'general_notes', 'Day 6 follow-up…'],
+    ['Sensor issues? (TRUE or FALSE)', 'sensor_issues', 'FALSE'],
+    ['Reliability (reliable / uncertain / flagged)', 'data_reliability', 'reliable'],
   ];
   rows.push(...defs);
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 26 }, { wch: 52 }, { wch: 28 }];
+  ws['!cols'] = [{ wch: 36 }, { wch: 28 }, { wch: 28 }];
   return ws;
 }
 
