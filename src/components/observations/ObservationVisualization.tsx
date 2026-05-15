@@ -29,6 +29,9 @@ import {
 import { observationService } from '../../firebase/observationService';
 import { SEAWEED_SPECIES, SPECIES_COLORS, type SeaweedObservation } from '../../types/observation';
 
+/** Species omitted from charts — e.g. combined tank totals that would distort per-sample growth curves. */
+const EXCLUDE_FROM_VISUALIZATION = new Set<string>(['other']);
+
 // Convert °F to °C for uniform charting
 const toC = (temp: number, unit?: string) =>
   unit === 'F' ? Math.round(((temp - 32) * 5) / 9 * 10) / 10 : temp;
@@ -97,17 +100,22 @@ const ObservationVisualization: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const chartData = useMemo(
+    () => data.filter(o => !EXCLUDE_FROM_VISUALIZATION.has(o.species)),
+    [data]
+  );
+
   const filteredData = useMemo(
-    () => (speciesFilter === 'all' ? data : data.filter(d => d.species === speciesFilter)),
-    [data, speciesFilter]
+    () => (speciesFilter === 'all' ? chartData : chartData.filter(d => d.species === speciesFilter)),
+    [chartData, speciesFilter]
   );
 
   const growthPoints = useMemo(() => buildGrowthSeries(filteredData), [filteredData]);
   const wqPoints = useMemo(() => buildWaterQualityPoints(filteredData), [filteredData]);
 
   const speciesPresent = useMemo(
-    () => [...new Set(data.map(d => d.species))],
-    [data]
+    () => [...new Set(chartData.map(d => d.species))],
+    [chartData]
   );
 
   const axisColor = theme.palette.text.secondary;
@@ -157,7 +165,7 @@ const ObservationVisualization: React.FC = () => {
           <Card>
             <CardHeader
               title="Biomass Growth Over Time"
-              subheader="Wet mass (g) per observation session"
+              subheader="Wet mass (g) per observation session. System total rows (species: Other) stay in the table but are omitted here so scales match sampled limu."
               titleTypographyProps={{ variant: 'h6' }}
             />
             <CardContent>
